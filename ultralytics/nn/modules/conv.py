@@ -16,7 +16,7 @@ __all__ = (
     "ConvTranspose",
     "Focus",
     "GhostConv",
-    "DSConv",
+    "GhostConv_BN_SL",
     "ChannelAttention",
     "SpatialAttention",
     "CBAM",
@@ -200,18 +200,14 @@ class Conv(nn.Module):
         """Perform transposed convolution of 2D data."""
         return self.act(self.conv(x))
     
-class DSConv(nn.Module):
+class GhostConv_BN_SL(Conv):
     default_act = nn.SiLU()  # default activation
 
     def __init__(self, c1, c2, k=1, s=1, p=None, g=1, d=1, act=True):
         """Initialize Conv layer with given arguments including activation."""
-        super().__init__()
-        self.conv = depthwise_separable_conv(c1, c2, k, p)
-        self.act = self.default_act if act is True else act if isinstance(act, nn.Module) else nn.Identity()
-
-    def forward(self, x):
-        """Perform transposed convolution of 2D data."""
-        return self.act(self.conv(x))
+        super().__init__(c1, c2, k, s, p, g=g, d=d, act=act)
+        self.conv = GhostConv(c1, c2, k, s, g, act)
+        
 
 
 class Conv2(Conv):
