@@ -46,7 +46,7 @@ def make_divisible(x, divisible_by=8):
 
 
 class InvertedResidual(nn.Module):
-    def __init__(self, inp, oup, stride, expand_ratio):
+    def __init__(self, inp, oup, stride, expand_ratio=1):
         super(InvertedResidual, self).__init__()
         self.stride = stride
         assert stride in [1, 2]
