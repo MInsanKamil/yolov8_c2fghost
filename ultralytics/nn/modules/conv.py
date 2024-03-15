@@ -22,7 +22,6 @@ __all__ = (
     "CBAM",
     "Concat",
     "RepConv",
-    "InvertedResidual",
 )
 
 def conv_bn(inp, oup, stride):
