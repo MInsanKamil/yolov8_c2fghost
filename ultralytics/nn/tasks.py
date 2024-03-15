@@ -8,7 +8,7 @@ import torch
 import torch.nn as nn
 
 from ultralytics.nn.modules.conv import(
-InvertedResidual,
+depthwise_separable_conv,
 )
 from ultralytics.nn.modules.block import(
     C2fGhost,
@@ -853,7 +853,7 @@ def parse_model(d, ch, verbose=True):  # model_dict, input_channels(3)
             Conv,
             ConvTranspose,
             GhostConv,
-            InvertedResidual,
+            depthwise_separable_conv,
             Bottleneck,
             GhostBottleneck,
             SPP,
