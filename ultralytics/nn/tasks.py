@@ -7,9 +7,9 @@ from pathlib import Path
 import torch
 import torch.nn as nn
 
-from ultralytics.nn.modules.conv import(
-InvertedResidual_BN_SL,
-)
+# from ultralytics.nn.modules.conv import(
+# InvertedResidual_BN_SL,
+# )
 from ultralytics.nn.modules.block import(
     C2fGhost,
 )
