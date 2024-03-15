@@ -209,7 +209,7 @@ class DSConv(nn.Module):
         self.conv = depthwise_separable_conv(c1, c2, k, p)
         self.act = self.default_act if act is True else act if isinstance(act, nn.Module) else nn.Identity()
 
-    def forward_fuse(self, x):
+    def forward(self, x):
         """Perform transposed convolution of 2D data."""
         return self.act(self.conv(x))
 
