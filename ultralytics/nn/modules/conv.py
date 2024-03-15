@@ -16,7 +16,7 @@ __all__ = (
     "ConvTranspose",
     "Focus",
     "GhostConv",
-    "depthwise_separable_conv",
+    "DSConv",
     "ChannelAttention",
     "SpatialAttention",
     "CBAM",
@@ -199,6 +199,12 @@ class Conv(nn.Module):
     def forward_fuse(self, x):
         """Perform transposed convolution of 2D data."""
         return self.act(self.conv(x))
+    
+class DSConv(Conv):
+    def __init__(self, c1, c2, k=3, s=1, p=None, g=1, d=1, act=True):
+        """Initialize Conv layer with given arguments including activation."""
+        super().__init__(c1, c2, k, s, p, g=g, d=d, act=act)
+        self.conv = depthwise_separable_conv(c1, c2, k = 3, p = 1, bias=False)
 
 
 class Conv2(Conv):
