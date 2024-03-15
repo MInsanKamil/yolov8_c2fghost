@@ -16,7 +16,7 @@ __all__ = (
     "ConvTranspose",
     "Focus",
     "GhostConv",
-    "GhostConv_BN_SL",
+    "InvertedResidual_BN_SL",
     "ChannelAttention",
     "SpatialAttention",
     "CBAM",
@@ -46,7 +46,7 @@ def make_divisible(x, divisible_by=8):
 
 
 class InvertedResidual(nn.Module):
-    def __init__(self, inp, oup, stride, expand_ratio=2):
+    def __init__(self, inp, oup, stride, expand_ratio):
         super(InvertedResidual, self).__init__()
         self.stride = stride
 
@@ -200,13 +200,13 @@ class Conv(nn.Module):
         """Perform transposed convolution of 2D data."""
         return self.act(self.conv(x))
     
-class GhostConv_BN_SL(Conv):
+class InvertedResidual_BN_SL(Conv):
     default_act = nn.SiLU()  # default activation
 
     def __init__(self, c1, c2, k=1, s=1, p=None, g=1, d=1, act=True):
         """Initialize Conv layer with given arguments including activation."""
         super().__init__(c1, c2, k, s, p, g=g, d=d, act=act)
-        self.conv = GhostConv(c1, c2, k, s, g, act)
+        self.conv = InvertedResidual(c1, c2, s)
         
 
 
