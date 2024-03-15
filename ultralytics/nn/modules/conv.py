@@ -200,7 +200,7 @@ class Conv(nn.Module):
         """Perform transposed convolution of 2D data."""
         return self.act(self.conv(x))
     
-class DSConv(Conv):
+class DSConv(nn.Module):
     default_act = nn.SiLU()  # default activation
 
     def __init__(self, c1, c2, k=1, s=1, p=None, g=1, d=1, act=True):
