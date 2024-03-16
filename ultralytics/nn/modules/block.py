@@ -296,7 +296,7 @@ class C3TR(C3):
         self.m = TransformerBlock(c_, c_, 4, n)
 
 
-class C3Ghost(C3):
+class C3Ghost(C3x):
     """C3 module with GhostBottleneck()."""
 
     def __init__(self, c1, c2, n=1, shortcut=True, g=1, e=0.5):
