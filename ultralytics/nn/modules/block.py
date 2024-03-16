@@ -306,7 +306,7 @@ class C3Ghost(C3x):
         self.m = nn.Sequential(*(GhostBottleneck(c_, c_) for _ in range(n)))
 
 class C2fGhost(C2f):
-    def init(self,c1,c2,n=1,shortcut=False,g=1,e=1):
+    def init(self,c1,c2,n=1,shortcut=False,g=1,e=0.9):
         super().init(c1,c2,n,shortcut,g,e)
         c_ = int (c2 *e)
         self.m = nn.Sequential(*(GhostBottleneck(c_,c_) for _ in range(n)))
