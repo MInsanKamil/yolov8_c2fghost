@@ -239,11 +239,7 @@ class C2f(nn.Module):
         y.extend(m(y[-1]) for m in self.m)
         return self.cv2(torch.cat(y, 1))
     
-class C2fGhost(C2f):
-    def init(self,c1,c2,n=1,shortcut=False,g=1,e=0.5):
-        super().init(c1,c2,n,shortcut,g,e)
-        c_ = int (c2 *e)
-        self.m = nn.Sequential(*(GhostBottleneck(c_,c_) for _ in range(n)))
+
 
 
 class C3(nn.Module):
@@ -308,6 +304,12 @@ class C3Ghost(C3):
         super().__init__(c1, c2, n, shortcut, g, e)
         c_ = int(c2 * e)  # hidden channels
         self.m = nn.Sequential(*(GhostBottleneck(c_, c_) for _ in range(n)))
+
+class C2fGhost(C2f):
+    def init(self,c1,c2,n=1,shortcut=False,g=1,e=0.5):
+        super().init(c1,c2,n,shortcut,g,e)
+        c_ = int (c2 *e)
+        self.m = nn.Sequential(*(GhostBottleneck(c_,c_) for _ in range(n)))
 
 
 class GhostBottleneck(nn.Module):
