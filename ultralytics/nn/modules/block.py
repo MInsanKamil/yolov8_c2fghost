@@ -315,7 +315,7 @@ class C2fGhost(C2f):
 
 class C2fADown(C2f):
     def init(self,c1,c2,n=1,shortcut=False,g=1,e=0.8):
-        super().init(c1,c2,n,shortcut,g,e)
+        super().__init__(c1, c2, n, shortcut, g, e)
         c = int(c2 * e)  # hidden channels
         self.cv1 = ADown(c1, 2 * c)
         self.cv2 = ADown((2 + n) * c, c2)
