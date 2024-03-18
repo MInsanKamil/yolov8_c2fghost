@@ -313,7 +313,7 @@ class C2fGhost(C2f):
         c_ = int (c2 *e)
         self.m = nn.Sequential(*(GhostBottleneck(c_,c_,1,2) for _ in range(n)))
 
-class C2fADown(C2f):
+class C2fADown(nn.Module):
     def __init__(self, c1, c2, n=1, shortcut=False, g=1, e=0.5):
         """Initialize CSP bottleneck layer with two convolutions with arguments ch_in, ch_out, number, shortcut, groups,
         expansion.
