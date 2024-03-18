@@ -309,13 +309,13 @@ class C2fGhost(C2f):
     def init(self,c1,c2,n=1,shortcut=False,g=1,e=0.8):
         super().init(c1,c2,n,shortcut,g,e)
         c_ = int (c2 *e)
-        self.m = nn.Sequential(*(GhostBottleneck(c_,c_) for _ in range(n)))
+        self.m = nn.Sequential(*(GhostBottleneck(c_,c_,1,2) for _ in range(n)))
 
 
 class GhostBottleneck(nn.Module):
     """Ghost Bottleneck https://github.com/huawei-noah/ghostnet."""
 
-    def __init__(self, c1, c2, k=1, s=2):
+    def __init__(self, c1, c2, k=3, s=1):
         """Initializes GhostBottleneck module with arguments ch_in, ch_out, kernel, stride."""
         super().__init__()
         c_ = c2 // 2
