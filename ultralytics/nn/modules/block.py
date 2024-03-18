@@ -363,7 +363,7 @@ class C2fADown(nn.Module):
 class GhostBottleneck(nn.Module):
     """Ghost Bottleneck https://github.com/huawei-noah/ghostnet."""
 
-    def __init__(self, c1, c2, k=3, s=1):
+    def __init__(self, c1, c2, k=3, s=2):
         """Initializes GhostBottleneck module with arguments ch_in, ch_out, kernel, stride."""
         super().__init__()
         c_ = c2 // 2
