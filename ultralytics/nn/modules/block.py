@@ -20,6 +20,7 @@ __all__ = (
     "C2f",
     "C2fAttn",
     "C2fADown",
+    "C2fGhost",
     "ImagePoolingAttn",
     "ContrastiveHead",
     "BNContrastiveHead",
