@@ -21,6 +21,7 @@ __all__ = (
     "C2fAttn",
     "C2fADown",
     "C2fGhost",
+    "C2fAttnGhost",
     "ImagePoolingAttn",
     "ContrastiveHead",
     "BNContrastiveHead",
@@ -330,6 +331,34 @@ class C2fGhost(nn.Module):
         """Forward pass using split() instead of chunk()."""
         y = list(self.cv1(x).split((self.c, self.c), 1))
         y.extend(m(y[-1]) for m in self.m)
+        return self.cv2(torch.cat(y, 1))
+    
+class C2fAttnGhost(nn.Module):
+    """C2f module with an additional attn module."""
+
+    def __init__(self, c1, c2, n=1, ec=128, nh=1, gc=512, shortcut=False, g=1, e=0.5):
+        """Initialize CSP bottleneck layer with two convolutions with arguments ch_in, ch_out, number, shortcut, groups,
+        expansion.
+        """
+        super().__init__()
+        self.c = int(c2 * e)  # hidden channels
+        self.cv1 = Conv(c1, 2 * self.c, 1, 1)
+        self.cv2 = Conv((3 + n) * self.c, c2, 1)  # optional act=FReLU(c2)
+        self.m = nn.Sequential(*(GhostBottleneck(self.c,self.c) for _ in range(n)))
+        self.attn = MaxSigmoidAttnBlock(self.c, self.c, gc=gc, ec=ec, nh=nh)
+
+    def forward(self, x, guide):
+        """Forward pass through C2f layer."""
+        y = list(self.cv1(x).chunk(2, 1))
+        y.extend(m(y[-1]) for m in self.m)
+        y.append(self.attn(y[-1], guide))
+        return self.cv2(torch.cat(y, 1))
+
+    def forward_split(self, x, guide):
+        """Forward pass using split() instead of chunk()."""
+        y = list(self.cv1(x).split((self.c, self.c), 1))
+        y.extend(m(y[-1]) for m in self.m)
+        y.append(self.attn(y[-1], guide))
         return self.cv2(torch.cat(y, 1))
 
 class C2fADown(nn.Module):
