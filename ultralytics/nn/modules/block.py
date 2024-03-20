@@ -357,7 +357,7 @@ class C2f_Double_Stride(nn.Module):
         y.extend(m(y[-1]) for m in self.m)
         x = self.cv2(torch.cat(y, 1))
         x = self.global_avg_pool(x)
-        return x.squeeze(2).squeeze(2)  # Flatten the output
+        return x  # Flatten the output
 
     def forward_split(self, x):
         """Forward pass using split() instead of chunk()."""
@@ -365,7 +365,7 @@ class C2f_Double_Stride(nn.Module):
         y.extend(m(y[-1]) for m in self.m)
         x = self.cv2(torch.cat(y, 1))
         x = self.global_avg_pool(x)
-        return x.squeeze(2).squeeze(2)  # Flatten the output
+        return x  # Flatten the output
 
 class C2fGhost(nn.Module):
     def __init__(self, c1, c2, n=1, shortcut=False, g=1, e=0.5):
