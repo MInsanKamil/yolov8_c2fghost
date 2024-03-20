@@ -349,7 +349,7 @@ class C2f_Double_Stride(nn.Module):
         self.cv1 = Conv(c1, 2 * self.c, 1, 1)  
         self.cv2 = Conv((2 + n) * self.c, c2, 1, 1) 
         self.m = nn.ModuleList(Bottleneck(self.c, self.c, shortcut, g, k=((3, 3), (3, 3)), e=1.0) for _ in range(n))
-        self.global_avg_pool = nn.AdaptiveAvgPool2d(1)  # GAP layer
+        self.global_avg_pool = nn.AdaptiveAvgPool2d(40)  # GAP layer
 
     def forward(self, x):
         """Forward pass through C2f layer."""
