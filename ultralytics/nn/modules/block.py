@@ -402,15 +402,17 @@ class C2f_Stride_Maxpool(nn.Module):
         """
         super().__init__()
         self.c = int(c2 * e)  # hidden channels
-        self.cv1 = Conv(c1, 2 * self.c, 1, 2)  
-        self.cv2 = Conv_Max_Pooling((2 + n) * self.c, c2, 1, 1) 
+        self.cv1 = Conv(c1, 2 * self.c, 1, 1)  
+        self.cv2 = Conv((2 + n) * self.c, c2, 1, 2) 
         self.m = nn.ModuleList(Bottleneck(self.c, self.c, shortcut, g, k=((3, 3), (3, 3)), e=1.0) for _ in range(n))
+        self.max_pool = nn.MaxPool2d(3, stride=2)
 
     def forward(self, x):
         """Forward pass through C2f layer."""
         y = list(self.cv1(x).chunk(2, 1))
         y.extend(m(y[-1]) for m in self.m)
         x = self.cv2(torch.cat(y, 1))
+        x = self.max_pool(x)
         return x 
 
 class C2f_Stride(nn.Module):
