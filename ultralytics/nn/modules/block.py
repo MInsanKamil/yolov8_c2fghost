@@ -392,7 +392,7 @@ class C2f_MaxPool(nn.Module):
         self.cv1 = Conv(c1, 2 * self.c, 1, 1)  
         self.cv2 = Conv((2 + n) * self.c, c2, 1, 1) 
         self.m = nn.ModuleList(Bottleneck(self.c, self.c, shortcut, g, k=((3, 3), (3, 3)), e=1.0) for _ in range(n))
-        self.max_pool = nn.MaxPool2d(3, stride=2)
+        self.max_pool = nn.MaxPool2d(2, stride=2)
 
     def forward(self, x):
         """Forward pass through C2f layer."""
