@@ -451,7 +451,7 @@ class C2f_Stride_Maxpool(nn.Module):
 class C2f_Stride(nn.Module):
     """Faster Implementation of CSP Bottleneck with 2 convolutions."""
 
-    def __init__(self, c1, c2, n=1, shortcut=False, g=1, e=0.8):
+    def __init__(self, c1, c2, n=1, shortcut=False, g=1, e=0.5):
         """Initialize CSP bottleneck layer with two convolutions with arguments ch_in, ch_out, number, shortcut, groups,
         expansion.
         """
