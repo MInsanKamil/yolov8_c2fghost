@@ -466,13 +466,6 @@ class C2f_Stride(nn.Module):
         y = list(self.cv1(x).chunk(2, 1))
         y.extend(m(y[-1]) for m in self.m)
         return self.cv2(torch.cat(y, 1))
-          
-    
-    def forward_split(self, x):
-        """Forward pass using split() instead of chunk()."""
-        y = list(self.cv1(x).split((self.c, self.c), 1))
-        y.extend(m(y[-1]) for m in self.m)
-        return self.cv2(torch.cat(y, 1))
     
 class C2f_MaxPool(nn.Module):
     """Faster Implementation of CSP Bottleneck with 2 convolutions."""
