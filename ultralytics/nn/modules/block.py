@@ -201,7 +201,7 @@ class SPPF_Fractional(nn.Module):
         c_ = c1 // 2  # hidden channels
         self.cv1 = Conv(c1, c_, 1, 1)
         self.cv2 = Conv(c_ * 4, c2, 1, 1)
-        self.m = nn.FractionalMaxPool2d(kernel_size=k, output_ratio=(0, 1))
+        self.m = nn.FractionalMaxPool2d(kernel_size=k, output_size=(c1, c2))
 
     def forward(self, x):
         """Forward pass through Ghost Convolution block."""
