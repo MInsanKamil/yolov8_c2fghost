@@ -268,12 +268,14 @@ class Conv_Fractional_Max_Pooling(nn.Module):
 
     def forward(self, x):
         """Apply convolution, batch normalization and activation to input tensor."""
+        x = self.fractional_max_pool(x)
         x = self.act(self.bn(self.conv(x)))
         x = self.fractional_max_pool(x)
         return x
 
     def forward_fuse(self, x):
         """Perform transposed convolution of 2D data."""
+        x = self.fractional_max_pool(x)
         x = self.act(self.conv(x))
         x = self.fractional_max_pool(x)
         return x
