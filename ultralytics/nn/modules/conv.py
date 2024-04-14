@@ -19,6 +19,7 @@ __all__ = (
     "GhostConv",
     "Conv_Max_Pooling",
     "Conv_Fractional_Max_Pooling",
+    "Conv_Fractional_Max_Pooling_CBAM",
     "ChannelAttention",
     "SpatialAttention",
     "CBAM",
@@ -238,7 +239,7 @@ class Conv_Dropout(nn.Module):
         self.conv = nn.Conv2d(c1, c2, k, s, autopad(k, p, d), groups=g, dilation=d, bias=False)
         self.bn = nn.BatchNorm2d(c2)
         self.act = self.default_act if act is True else act if isinstance(act, nn.Module) else nn.Identity()
-        self.dropout = nn.Dropout(p=0.3) # GAP layer
+        self.dropout = nn.Dropout(p=0.2) # GAP layer
 
     def forward(self, x):
         """Apply convolution, batch normalization and activation to input tensor."""
@@ -275,6 +276,34 @@ class Conv_Fractional_Max_Pooling(nn.Module):
         """Perform transposed convolution of 2D data."""
         x = self.act(self.conv(x))
         x = self.fractional_max_pool(x)
+        return x
+    
+class Conv_Fractional_Max_Pooling_CBAM(nn.Module):
+    """Standard convolution with args(ch_in, ch_out, kernel, stride, padding, groups, dilation, activation)."""
+
+    default_act = nn.SiLU()  # default activation
+
+    def __init__(self, c1, c2, k=1, s=1, p=None, g=1, d=1, act=True):
+        """Initialize Conv layer with given arguments including activation."""
+        super().__init__()
+        self.conv = nn.Conv2d(c1, c2, k, s, autopad(k, p, d), groups=g, dilation=d, bias=False)
+        self.bn = nn.BatchNorm2d(c2)
+        self.act = self.default_act if act is True else act if isinstance(act, nn.Module) else nn.Identity()
+        self.fractional_max_pool = nn.FractionalMaxPool2d(3, output_ratio=(0.25, 0.25))
+        self.attantion = CBAM(c1)
+
+    def forward(self, x):
+        """Apply convolution, batch normalization and activation to input tensor."""
+        x = self.act(self.bn(self.conv(x)))
+        x = self.fractional_max_pool(x)
+        x = self.attantion(x)
+        return x
+
+    def forward_fuse(self, x):
+        """Perform transposed convolution of 2D data."""
+        x = self.act(self.conv(x))
+        x = self.fractional_max_pool(x)
+        x = self.attantion(x)
         return x
     
 # class InvertedResidual_BN_SL(Conv):
