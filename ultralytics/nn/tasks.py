@@ -8,7 +8,7 @@ import torch
 import torch.nn as nn
 
 from ultralytics.nn.modules.conv import(
-LightConv,Conv_Max_Pooling,Conv_Fractional_Max_Pooling
+LightConv,Conv_Max_Pooling,Conv_Fractional_Max_Pooling,Conv_Fractional_Max_Pooling_Last
 )
 from ultralytics.nn.modules.block import(
     C2fADown,C2fGhost,C2fAttnGhost,C2f_Double_Stride,C2f_Stride,C2f_MaxPool, C2f_Double_MaxPool, C2f_Upsample,C2f_Stride_Maxpool,C2f_Fractional_MaxPool,C3f_Double_Stride,SPPF_Fractional
@@ -855,6 +855,7 @@ def parse_model(d, ch, verbose=True):  # model_dict, input_channels(3)
             GhostConv,
             Conv_Max_Pooling,
             Conv_Fractional_Max_Pooling,
+            Conv_Fractional_Max_Pooling_Last,
             LightConv,
             Bottleneck,
             GhostBottleneck,
