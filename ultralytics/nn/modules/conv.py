@@ -291,7 +291,7 @@ class Conv_Fractional_Max_Pooling_Attn(nn.Module):
         self.bn = nn.BatchNorm2d(c2)
         self.act = self.default_act if act is True else act if isinstance(act, nn.Module) else nn.Identity()
         self.fractional_max_pool = nn.FractionalMaxPool2d(3, output_ratio=(0.25, 0.25))
-        self.attn = SpatialAttention(kernel_size=3)
+        self.attn = CBAM(c1, kernel_size=3)
 
     def forward(self, x):
         """Apply convolution, batch normalization and activation to input tensor."""
