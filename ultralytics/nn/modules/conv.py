@@ -267,17 +267,20 @@ class Conv_Fractional_Max_Pooling(nn.Module):
         self.fractional_max_pool = nn.FractionalMaxPool2d(3, output_ratio=(0.25, 0.25))
 
     def forward(self, x):
-        """Apply convolution, batch normalization and activation to input tensor."""
-        x = self.act(self.bn(self.conv(x)))
-        x = self.fractional_max_pool(x)
-        return x
+        """Apply convolution, batch normalization, activation, and fractional max pooling to input tensor."""
+        x_before_pooling = self.act(self.bn(self.conv(x)))  # Feature sebelum pooling
+        x_pooled = self.fractional_max_pool(x_before_pooling)
+        x_after_pooling = self.act(x_pooled)  # Feature setelah pooling
+        x_fused = x_before_pooling + x_after_pooling  # Melakukan penambahan sederhana
+        return x_fused
 
     def forward_fuse(self, x):
         """Perform transposed convolution of 2D data."""
         x = self.act(self.conv(x))
-        x = self.fractional_max_pool(x)
-        return x
+        x_pooled = self.fractional_max_pool(x)
+        return x_pooled
     
+
 class Conv_Fractional_Max_Pooling_CBAM(nn.Module):
     """Standard convolution with args(ch_in, ch_out, kernel, stride, padding, groups, dilation, activation)."""
 
