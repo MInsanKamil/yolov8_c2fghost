@@ -290,15 +290,19 @@ class Conv_SP(nn.Module):
         self.conv = nn.Conv2d(c1, c2, k, s, autopad(k, p, d), groups=g, dilation=d, bias=False)
         self.bn = nn.BatchNorm2d(c2)
         self.act = self.default_act if act is True else act if isinstance(act, nn.Module) else nn.Identity()
-        # self.sattn = SpatialAttention()
+        self.sattn = SpatialAttention()
 
     def forward(self, x):
         """Apply convolution, batch normalization and activation to input tensor."""
-        return x * self.act(self.bn(self.conv(torch.cat([torch.mean(x, 1, keepdim=True), torch.max(x, 1, keepdim=True)[0]], 1))))
+        x = self.act(self.bn(self.conv(x)))
+        x = self.sattn(x)
+        return x
 
     def forward_fuse(self, x):
         """Perform transposed convolution of 2D data."""
-        return x * self.act(self.conv(torch.cat([torch.mean(x, 1, keepdim=True), torch.max(x, 1, keepdim=True)[0]], 1)))
+        x = self.act(self.conv(x))
+        x = self.sattn(x)
+        return x
 
 class Conv_Fractional_Max_Pooling_Attn(nn.Module):
     """Standard convolution with args(ch_in, ch_out, kernel, stride, padding, groups, dilation, activation)."""
@@ -311,7 +315,7 @@ class Conv_Fractional_Max_Pooling_Attn(nn.Module):
         self.conv = nn.Conv2d(c1, c2, k, s, autopad(k, p, d), groups=g, dilation=d, bias=False)
         self.bn = nn.BatchNorm2d(c2)
         self.act = self.default_act if act is True else act if isinstance(act, nn.Module) else nn.Identity()
-        self.fractional_max_pool = nn.FractionalMaxPool2d(3, output_ratio=(0.25, 0.25))
+        self.fractional_max_pool = nn.FractionalMaxPool2d(3, output_ratio=(0.5, 0.5))
         self.sattn = SpatialAttention(kernel_size=3)
 
     def forward(self, x):
