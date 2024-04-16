@@ -19,7 +19,7 @@ __all__ = (
     "GhostConv",
     "Conv_Max_Pooling",
     "Conv_Fractional_Max_Pooling",
-    "Conv_Fractional_Max_Pooling_CBAM",
+    "Conv_Fractional_Max_Pooling_Attn",
     "ChannelAttention",
     "SpatialAttention",
     "CBAM",
@@ -267,21 +267,19 @@ class Conv_Fractional_Max_Pooling(nn.Module):
         self.fractional_max_pool = nn.FractionalMaxPool2d(3, output_ratio=(0.25, 0.25))
 
     def forward(self, x):
-        """Apply convolution, batch normalization, activation, and fractional max pooling to input tensor."""
-        x_before_pooling = self.act(self.bn(self.conv(x)))  # Feature sebelum pooling
-        x_pooled = self.fractional_max_pool(x_before_pooling)
-        x_after_pooling = self.act(x_pooled)  # Feature setelah pooling
-        x_fused = x_before_pooling + x_after_pooling  # Melakukan penambahan sederhana
-        return x_fused
+        """Apply convolution, batch normalization and activation to input tensor."""
+        x = self.act(self.bn(self.conv(x)))
+        x = self.fractional_max_pool(x)
+        return x
 
     def forward_fuse(self, x):
         """Perform transposed convolution of 2D data."""
         x = self.act(self.conv(x))
-        x_pooled = self.fractional_max_pool(x)
-        return x_pooled
+        x = self.fractional_max_pool(x)
+        return x
     
 
-class Conv_Fractional_Max_Pooling_CBAM(nn.Module):
+class Conv_Fractional_Max_Pooling_Attn(nn.Module):
     """Standard convolution with args(ch_in, ch_out, kernel, stride, padding, groups, dilation, activation)."""
 
     default_act = nn.SiLU()  # default activation
@@ -293,20 +291,20 @@ class Conv_Fractional_Max_Pooling_CBAM(nn.Module):
         self.bn = nn.BatchNorm2d(c2)
         self.act = self.default_act if act is True else act if isinstance(act, nn.Module) else nn.Identity()
         self.fractional_max_pool = nn.FractionalMaxPool2d(3, output_ratio=(0.25, 0.25))
-        self.attantion = CBAM(c1)
+        self.attn = SpatialAttention(kernel_size=3)
 
     def forward(self, x):
         """Apply convolution, batch normalization and activation to input tensor."""
         x = self.act(self.bn(self.conv(x)))
         x = self.fractional_max_pool(x)
-        x = self.attantion(x)
+        x = self.attn(x)
         return x
 
     def forward_fuse(self, x):
         """Perform transposed convolution of 2D data."""
         x = self.act(self.conv(x))
         x = self.fractional_max_pool(x)
-        x = self.attantion(x)
+        x = self.attn(x)
         return x
     
 # class InvertedResidual_BN_SL(Conv):
