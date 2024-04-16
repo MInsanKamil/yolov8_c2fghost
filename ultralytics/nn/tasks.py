@@ -11,7 +11,7 @@ from ultralytics.nn.modules.conv import(
 LightConv,Conv_Max_Pooling,Conv_Fractional_Max_Pooling,Conv_Dropout,Conv_Fractional_Max_Pooling_Attn,Conv_SP
 )
 from ultralytics.nn.modules.block import(
-    C2fADown,C2f_ca_sa,C2fGhost,C2fAttnGhost,C2f_Double_Stride,C2f_Stride,C2f_MaxPool, C2f_Double_MaxPool, C2f_Upsample,C2f_Stride_Maxpool,C2f_Fractional_MaxPool,C3f_Double_Stride,SPPF_Fractional
+    C2fADown,C2f_sa,C2fGhost,C2fAttnGhost,C2f_Double_Stride,C2f_Stride,C2f_MaxPool, C2f_Double_MaxPool, C2f_Upsample,C2f_Stride_Maxpool,C2f_Fractional_MaxPool,C3f_Double_Stride,SPPF_Fractional
 )
 
 from ultralytics.nn.modules import (
@@ -871,7 +871,7 @@ def parse_model(d, ch, verbose=True):  # model_dict, input_channels(3)
             C2,
             C2f,
             C2fADown,
-            C2f_ca_sa,
+            C2f_sa,
             C2fGhost,
             C2fAttnGhost,
             C2f_Double_Stride,
@@ -904,7 +904,7 @@ def parse_model(d, ch, verbose=True):  # model_dict, input_channels(3)
                 )  # num heads
 
             args = [c1, c2, *args[1:]]
-            if m in (BottleneckCSP, C1, C2, C2f, C2fAttn, C3, C3TR, C3Ghost,C2fADown,C2f_ca_sa,C2fGhost,C2fAttnGhost,C2f_Double_Stride,C2f_Stride,C2f_MaxPool,C2f_Double_MaxPool,C2f_Upsample,C2f_Stride_Maxpool,C2f_Fractional_MaxPool,C3f_Double_Stride, C3x, RepC3):
+            if m in (BottleneckCSP, C1, C2, C2f, C2fAttn, C3, C3TR, C3Ghost,C2fADown,C2f_sa,C2fGhost,C2fAttnGhost,C2f_Double_Stride,C2f_Stride,C2f_MaxPool,C2f_Double_MaxPool,C2f_Upsample,C2f_Stride_Maxpool,C2f_Fractional_MaxPool,C3f_Double_Stride, C3x, RepC3):
                 args.insert(2, n)  # number of repeats
                 n = 1
         elif m is AIFI:

@@ -291,18 +291,15 @@ class Conv_SP(nn.Module):
         self.bn = nn.BatchNorm2d(c2)
         self.act = self.default_act if act is True else act if isinstance(act, nn.Module) else nn.Identity()
         self.sattn = SpatialAttention()
-        self.cattn = ChannelAttention(c1)
 
     def forward(self, x):
         """Apply convolution, batch normalization and activation to input tensor."""
-        x = self.cattn(x)
         x = self.act(self.bn(self.conv(x)))
         x = self.sattn(x)
         return x
 
     def forward_fuse(self, x):
         """Perform transposed convolution of 2D data."""
-        x = self.cattn(x)
         x = self.act(self.conv(x))
         x = self.sattn(x)
         return x

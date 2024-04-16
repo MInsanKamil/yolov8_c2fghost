@@ -19,7 +19,7 @@ __all__ = (
     "C2",
     "C3",
     "C2f",
-    "C2f_ca_sa",
+    "C2f_sa",
     "C2fAttn",
     "C2fADown",
     "C2fGhost",
@@ -371,7 +371,7 @@ class C2f(nn.Module):
         y.extend(m(y[-1]) for m in self.m)
         return self.cv2(torch.cat(y, 1))
     
-class C2f_ca_sa(nn.Module):
+class C2f_sa(nn.Module):
     """Faster Implementation of CSP Bottleneck with 2 convolutions."""
 
     def __init__(self, c1, c2, n=1, shortcut=False, g=1, e=0.5):
