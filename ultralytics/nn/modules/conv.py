@@ -265,7 +265,7 @@ class Conv_Fractional_Max_Pooling(nn.Module):
         self.conv = nn.Conv2d(c1, c2, k, s, autopad(k, p, d), groups=g, dilation=d, bias=False)
         self.bn = nn.BatchNorm2d(c2)
         self.act = self.default_act if act is True else act if isinstance(act, nn.Module) else nn.Identity()
-        self.fractional_max_pool = nn.FractionalMaxPool2d(3, output_ratio=(0.75, 0.75))
+        self.fractional_max_pool = nn.FractionalMaxPool2d(3, output_ratio=(0.4, 0.4))
 
     def forward(self, x):
         """Apply convolution, batch normalization and activation to input tensor."""
