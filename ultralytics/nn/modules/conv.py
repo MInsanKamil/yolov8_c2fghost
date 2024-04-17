@@ -316,20 +316,20 @@ class Conv_Fractional_Max_Pooling_Attn(nn.Module):
         self.bn = nn.BatchNorm2d(c2)
         self.act = self.default_act if act is True else act if isinstance(act, nn.Module) else nn.Identity()
         self.fractional_max_pool = nn.FractionalMaxPool2d(3, output_ratio=(0.5, 0.5))
-        self.sattn = SpatialAttention(kernel_size=3)
+        self.cattn = ChannelAttention(c1)
 
     def forward(self, x):
         """Apply convolution, batch normalization and activation to input tensor."""
         x = self.act(self.bn(self.conv(x)))
         x = self.fractional_max_pool(x)
-        x = self.sattn(x)
+        x = self.cattn(x)
         return x
 
     def forward_fuse(self, x):
         """Perform transposed convolution of 2D data."""
         x = self.act(self.conv(x))
         x = self.fractional_max_pool(x)
-        x = self.sattn(x)
+        x = self.cattn(x)
         return x
     
 # class InvertedResidual_BN_SL(Conv):
