@@ -11,7 +11,7 @@ from ultralytics.nn.modules.conv import(
 LightConv,Conv_Avg_Pooling,Conv_Max_Pooling,Conv_Fractional_Max_Pooling,Conv_Dropout,Conv_Fractional_Max_Pooling_Attn,Conv_SP,CBAM_Conv_Fractional_Max_Pooling,Conv_S3Pool_Attn
 )
 from ultralytics.nn.modules.block import(
-    C2fADown,C2f_sa,C2fGhost,C2fAttnGhost,C2f_Double_Stride,C2f_Stride,C2f_MaxPool, C2f_Double_MaxPool, C2f_Upsample,C2f_Stride_Maxpool,C2f_Fractional_MaxPool,C3f_Double_Stride,SPPF_Fractional
+    C2fADown,C2f_sa,C2fGhost,C2fAttnGhost,C2f_Double_Stride,C2f_Stride,C2f_MaxPool, C2f_Double_MaxPool, C2f_Upsample,C2f_Stride_Maxpool,C2f_Fractional_MaxPool,C3f_Double_Stride,SPPF_Fractional,SPPF_Avg
 )
 
 from ultralytics.nn.modules import (
@@ -866,6 +866,7 @@ def parse_model(d, ch, verbose=True):  # model_dict, input_channels(3)
             GhostBottleneck,
             SPP,
             SPPF_Fractional,
+            SPPF_Avg,
             SPPF,
             DWConv,
             Focus,
