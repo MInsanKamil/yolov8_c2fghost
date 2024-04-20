@@ -326,17 +326,11 @@ class Conv_Avg_Pooling_Attn(nn.Module):
 
     def forward(self, x):
         """Apply convolution, batch normalization and activation to input tensor."""
-        x = self.act(self.bn(self.conv(x)))
-        x = self.avg_pool(x)
-        x = self.cbam(x)
-        return x
+        return self.act(self.bn(self.cbam(self.avg_pool(self.conv(x)))))
 
     def forward_fuse(self, x):
         """Perform transposed convolution of 2D data."""
-        x = self.act(self.conv(x))
-        x = self.avg_pool(x)
-        x = self.cbam(x)
-        return x
+        return self.act(self.cbam(self.avg_pool(self.conv(x))))
 
 class Conv_Dropout(nn.Module):
     """Standard convolution with args(ch_in, ch_out, kernel, stride, padding, groups, dilation, activation)."""
