@@ -254,8 +254,8 @@ class Avg_Pooling_Conv(nn.Module):
 
     def forward_fuse(self, x):
         """Perform transposed convolution of 2D data."""
-        x = self.act(self.conv(x))
         x = self.avg_pool(x)
+        x = self.act(self.conv(x))
         return x
     
 class Conv_Avg_Pooling(nn.Module):
