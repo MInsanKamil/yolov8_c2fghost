@@ -32,6 +32,7 @@ __all__ = (
     "Conv_Avg_Pooling",
     "Avg_Pooling_Conv",
     "Conv_3",
+    "Conv_Avg_Pooling_Attn"
 )
 
 def conv_bn(inp, oup, stride):
@@ -307,6 +308,34 @@ class Conv_Avg_Pooling(nn.Module):
         """Perform transposed convolution of 2D data."""
         x = self.act(self.conv(x))
         x = self.avg_pool(x)
+        return x
+
+class Conv_Avg_Pooling_Attn(nn.Module):
+    """Standard convolution with args(ch_in, ch_out, kernel, stride, padding, groups, dilation, activation)."""
+
+    default_act = nn.SiLU()  # default activation
+
+    def __init__(self, c1, c2, k=1, s=1, p=None, g=1, d=1, act=True):
+        """Initialize Conv layer with given arguments including activation."""
+        super().__init__()
+        self.conv = nn.Conv2d(c1, c2, k, s, autopad(k, p, d), groups=g, dilation=d, bias=False)
+        self.bn = nn.BatchNorm2d(c2)
+        self.act = self.default_act if act is True else act if isinstance(act, nn.Module) else nn.Identity()
+        self.avg_pool = nn.AvgPool2d(3, stride=4)  # GAP layer
+        self.cbam = CBAM(c2)
+
+    def forward(self, x):
+        """Apply convolution, batch normalization and activation to input tensor."""
+        x = self.act(self.bn(self.conv(x)))
+        x = self.avg_pool(x)
+        x = self.cbam(x)
+        return x
+
+    def forward_fuse(self, x):
+        """Perform transposed convolution of 2D data."""
+        x = self.act(self.conv(x))
+        x = self.avg_pool(x)
+        x = self.cbam(x)
         return x
 
 class Conv_Dropout(nn.Module):
