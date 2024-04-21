@@ -146,8 +146,7 @@ tests/
 
 # Neural Network weights -----------------------------------------------------------------------------------------------
 weights/
-*.weights
-*.pt
+*.weight
 *.pb
 *.onnx
 *.engine
