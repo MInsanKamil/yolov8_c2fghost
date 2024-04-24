@@ -7,6 +7,7 @@ import numpy as np
 import torch
 import torch.nn as nn
 from torch.autograd import Variable
+import torch.nn.functional as F
 
 __all__ = (
     "Conv",
@@ -32,7 +33,8 @@ __all__ = (
     "Conv_Avg_Pooling",
     "Avg_Pooling_Conv",
     "Conv_3",
-    "Conv_Avg_Pooling_Attn"
+    "Conv_Avg_Pooling_Attn",
+    "Conv_Avg_Pooling_Dropout",
 )
 
 def conv_bn(inp, oup, stride):
@@ -309,6 +311,34 @@ class Conv_Avg_Pooling(nn.Module):
         x = self.act(self.conv(x))
         x = self.avg_pool(x)
         return x
+    
+class Conv_Avg_Pooling_Dropout(nn.Module):
+    """Standard convolution with args(ch_in, ch_out, kernel, stride, padding, groups, dilation, activation)."""
+
+    default_act = nn.SiLU()  # default activation
+
+    def __init__(self, c1, c2, k=1, s=1, p=None, g=1, d=1, act=True):
+        """Initialize Conv layer with given arguments including activation."""
+        super().__init__()
+        self.conv = nn.Conv2d(c1, c2, k, s, autopad(k, p, d), groups=g, dilation=d, bias=False)
+        self.bn = nn.BatchNorm2d(c2)
+        self.act = self.default_act if act is True else act if isinstance(act, nn.Module) else nn.Identity()
+        self.avg_pool = nn.AvgPool2d(3, stride=4)  # GAP layer
+        self.dropout = nn.Dropout(p=0.5)
+
+    def forward(self, x):
+        """Apply convolution, batch normalization and activation to input tensor."""
+        x = self.act(self.bn(self.conv(x)))
+        x = self.dropout(x)
+        x = self.avg_pool(x)
+        return x
+
+    def forward_fuse(self, x):
+        """Perform transposed convolution of 2D data."""
+        x = self.act(self.conv(x))
+        x = self.dropout(x)
+        x = self.avg_pool(x)
+        return x
 
 class Conv_Avg_Pooling_Attn(nn.Module):
     """Standard convolution with args(ch_in, ch_out, kernel, stride, padding, groups, dilation, activation)."""
@@ -387,6 +417,8 @@ class Conv_Fractional_Max_Pooling(nn.Module):
         x = self.act(self.conv(x))
         x = self.fractional_max_pool(x)
         return x
+    
+
     
 class CBAM_Conv_Fractional_Max_Pooling(nn.Module):
     """Standard convolution with args(ch_in, ch_out, kernel, stride, padding, groups, dilation, activation)."""
@@ -838,6 +870,60 @@ class CBAM(nn.Module):
     def forward(self, x):
         """Applies the forward pass through C1 module."""
         return self.spatial_attention(self.channel_attention(x))
+    
+class DoubleAttentionLayer(nn.Module):
+    """
+    Implementation of Double Attention Network. NIPS 2018
+    """
+    def __init__(self, in_channels: int, c_m: int, c_n: int, reconstruct = False):
+        """
+
+        Parameters
+        ----------
+        in_channels
+        c_m
+        c_n
+        reconstruct: `bool` whether to re-construct output to have shape (B, in_channels, L, R)
+        """
+        super(DoubleAttentionLayer, self).__init__()
+        self.c_m = c_m
+        self.c_n = c_n
+        self.in_channels = in_channels
+        self.reconstruct = reconstruct
+        self.convA = nn.Conv2d(in_channels, c_m, kernel_size = 1)
+        self.convB = nn.Conv2d(in_channels, c_n, kernel_size = 1)
+        self.convV = nn.Conv2d(in_channels, c_n, kernel_size = 1)
+        if self.reconstruct:
+            self.conv_reconstruct = nn.Conv2d(c_m, in_channels, kernel_size = 1)
+
+    def forward(self, x: torch.Tensor):
+        """
+
+        Parameters
+        ----------
+        x: `torch.Tensor` of shape (B, C, H, W)
+
+        Returns
+        -------
+
+        """
+        batch_size, c, h, w = x.size()
+        assert c == self.in_channels, 'input channel not equal!'
+        A = self.convA(x)  # (B, c_m, h, w) because kernel size is 1
+        B = self.convB(x)  # (B, c_n, h, w)
+        V = self.convV(x)  # (B, c_n, h, w)
+        tmpA = A.view(batch_size, self.c_m, h * w)
+        attention_maps = B.view(batch_size, self.c_n, h * w)
+        attention_vectors = V.view(batch_size, self.c_n, h * w)
+        attention_maps = F.softmax(attention_maps, dim = -1)  # softmax on the last dimension to create attention maps
+        # step 1: feature gathering
+        global_descriptors = torch.bmm(tmpA, attention_maps.permute(0, 2, 1))  # (B, c_m, c_n)
+        # step 2: feature distribution
+        attention_vectors = F.softmax(attention_vectors, dim = 1)  # (B, c_n, h * w) attention on c_n dimension
+        tmpZ = global_descriptors.matmul(attention_vectors)  # B, self.c_m, h * w
+        tmpZ = tmpZ.view(batch_size, self.c_m, h, w)
+        if self.reconstruct: tmpZ = self.conv_reconstruct(tmpZ)
+        return tmpZ
 
 
 class Concat(nn.Module):
@@ -851,3 +937,5 @@ class Concat(nn.Module):
     def forward(self, x):
         """Forward pass for the YOLOv8 mask Proto module."""
         return torch.cat(x, self.d)
+    
+
