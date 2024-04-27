@@ -6,7 +6,6 @@ import random
 import time
 from contextlib import contextmanager
 from copy import deepcopy
-from copy import copy
 from pathlib import Path
 from typing import Union
 
@@ -436,7 +435,7 @@ class ModelEMA:
 
     def __init__(self, model, decay=0.9999, tau=2000, updates=0):
         """Create EMA."""
-        self.ema = copy(de_parallel(model)).eval()  # FP32 EMA
+        self.ema = deepcopy(de_parallel(model)).eval()  # FP32 EMA
         self.updates = updates  # number of EMA updates
         self.decay = lambda x: decay * (1 - math.exp(-x / tau))  # decay exponential ramp (to help early epochs)
         for p in self.ema.parameters():
