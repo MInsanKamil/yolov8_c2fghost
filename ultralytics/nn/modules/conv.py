@@ -224,21 +224,22 @@ class Conv_Prune(nn.Module):
         """Initialize Conv layer with given arguments including activation."""
         super().__init__()
         self.conv = prune.l1_unstructured(nn.Conv2d(c1, c2, k, s, autopad(k, p, d), groups=g, dilation=d, bias=False), name="weight", amount=0.5)
+        self.prune = torch.nn.utils.remove_weight_norm(self.conv , name='weight')
         self.bn = nn.BatchNorm2d(c2)
         self.act = self.default_act if act is True else act if isinstance(act, nn.Module) else nn.Identity()
 
-        # Create a new Conv2d layer and copy weights (and bias if applicable)
-        new_conv = nn.Conv2d(c1, c2, k, s, autopad(k, p, d), groups=g, dilation=d, bias=False)
-        new_conv.weight = nn.Parameter(self.conv.weight.clone())
-        self.conv = new_conv  # Replace the original conv with the copied one
+        # # Create a new Conv2d layer and copy weights (and bias if applicable)
+        # new_conv = nn.Conv2d(c1, c2, k, s, autopad(k, p, d), groups=g, dilation=d, bias=False)
+        # new_conv.weight.data = self.conv.weight.data.clone()
+        # self.conv = new_conv  # Replace the original conv with the copied one
 
     def forward(self, x):
         """Apply convolution, batch normalization and activation to input tensor."""
-        return self.act(self.bn(self.conv(x)))
+        return self.act(self.bn(self.prune(x)))
 
     def forward_fuse(self, x):
         """Perform transposed convolution of 2D data."""
-        return self.act(self.conv(x))
+        return self.act(self.prune(x))
     
 class Conv_3(nn.Module):
     """Standard convolution with args(ch_in, ch_out, kernel, stride, padding, groups, dilation, activation)."""
