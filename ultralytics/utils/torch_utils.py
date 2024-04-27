@@ -435,8 +435,7 @@ class ModelEMA:
 
     def __init__(self, model, decay=0.9999, tau=2000, updates=0):
         """Create EMA."""
-        self.ema = de_parallel(model).eval()  # Set to eval mode
-        self.ema.load_state_dict(de_parallel(model).state_dict())  # FP32 EMA
+        self.ema = de_parallel(model).clone().eval()  # FP32 EMA
         self.updates = updates  # number of EMA updates
         self.decay = lambda x: decay * (1 - math.exp(-x / tau))  # decay exponential ramp (to help early epochs)
         for p in self.ema.parameters():
