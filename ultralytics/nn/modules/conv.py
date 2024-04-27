@@ -229,7 +229,7 @@ class Conv_Prune(nn.Module):
 
         # Create a new Conv2d layer and copy weights (and bias if applicable)
         new_conv = nn.Conv2d(c1, c2, k, s, autopad(k, p, d), groups=g, dilation=d, bias=False)
-        new_conv.weight.data = self.conv.weight.data.clone()
+        new_conv.weight = nn.Parameter(self.conv.weight.clone())
         self.conv = new_conv  # Replace the original conv with the copied one
 
     def forward(self, x):
