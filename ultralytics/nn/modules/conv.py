@@ -361,7 +361,7 @@ class Conv_Mix_Pooling_Dropout_Attn(nn.Module):
         x = self.dropout(x)
         avg = self.avg_pool(x)
         max = self.max_pool(x)
-        mix =torch.cat((avg, max), 1)
+        mix =torch.cat((avg, max), 0)
         x = self.sa(mix)
         return x
 
