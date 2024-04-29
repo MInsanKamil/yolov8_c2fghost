@@ -37,7 +37,8 @@ __all__ = (
     "Conv_3",
     "Conv_Avg_Pooling_Attn",
     "Conv_Mix_Pooling_Dropout_Attn",
-    "Conv_Attn"
+    "Conv_Attn",
+    "Conv_Avg_Pooling_Attn_Dropout"
 )
 
 def conv_bn(inp, oup, stride):
@@ -336,6 +337,8 @@ class Conv_Avg_Pooling(nn.Module):
         x = self.act(self.conv(x))
         x = self.avg_pool(x)
         return x
+    
+
 class mixedPool(nn.Module):
     def __init__(self,kernel_size, stride, padding=0, alpha=0.5):
         # nn.Module.__init__(self)
@@ -412,6 +415,40 @@ class Conv_Avg_Pooling_Attn(nn.Module):
         """Perform transposed convolution of 2D data."""
         x = self.ca(x)
         x = self.act(self.conv(x))
+        x = self.avg_pool(x)
+        x = self.sa(x)
+        return x
+    
+class Conv_Avg_Pooling_Attn_Dropout(nn.Module):
+    """Standard convolution with args(ch_in, ch_out, kernel, stride, padding, groups, dilation, activation)."""
+
+    default_act = nn.SiLU()  # default activation
+
+    def __init__(self, c1, c2, k=1, s=1, p=None, g=1, d=1, act=True):
+        """Initialize Conv layer with given arguments including activation."""
+        super().__init__()
+        self.conv = nn.Conv2d(c1, c2, k, s, autopad(k, p, d), groups=g, dilation=d, bias=False)
+        self.bn = nn.BatchNorm2d(c2)
+        self.act = self.default_act if act is True else act if isinstance(act, nn.Module) else nn.Identity()
+        self.avg_pool = nn.AvgPool2d(3, stride=2)
+        self.dropout = nn.Dropout(p=0.1)  # GAP layer
+        self.ca = ChannelAttention(c1)
+        self.sa = SpatialAttention()
+
+    def forward(self, x):
+        """Apply convolution, batch normalization and activation to input tensor."""
+        x = self.ca(x)
+        x = self.act(self.bn(self.conv(x)))
+        x = self.dropout(x)
+        x = self.avg_pool(x)
+        x = self.sa(x)
+        return x
+
+    def forward_fuse(self, x):
+        """Perform transposed convolution of 2D data."""
+        x = self.ca(x)
+        x = self.act(self.conv(x))
+        x = self.dropout(x)
         x = self.avg_pool(x)
         x = self.sa(x)
         return x
