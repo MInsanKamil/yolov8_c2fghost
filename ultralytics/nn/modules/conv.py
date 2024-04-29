@@ -431,7 +431,7 @@ class Conv_Avg_Pooling_Attn_Dropout(nn.Module):
         self.bn = nn.BatchNorm2d(c2)
         self.act = self.default_act if act is True else act if isinstance(act, nn.Module) else nn.Identity()
         self.avg_pool = nn.AvgPool2d(3, stride=2)
-        self.dropout = nn.Dropout(p=0.01)  # GAP layer
+        self.dropout = nn.Dropout(p=0.1)  # GAP layer
         self.ca = ChannelAttention(c1)
         self.sa = SpatialAttention()
 
