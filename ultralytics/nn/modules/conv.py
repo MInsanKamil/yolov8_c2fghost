@@ -14,6 +14,7 @@ __all__ = (
     "Conv",
     "Conv2",
     "LightConv",
+    "Conv_sliceSamp_Attn",
     "Conv_Spatial_Attn",
     "Conv_Prune",
     "CBAM_Conv_Fractional_Max_Pooling",
@@ -190,16 +191,60 @@ def autopad(k, p=None, d=1):  # kernel, padding, dilation
         p = k // 2 if isinstance(k, int) else [x // 2 for x in k]  # auto-pad
     return p
 
-class depthwise_separable_conv(nn.Module):
-    def __init__(self, nin, nout, kernel_size = 3, padding = 1, bias=False):
-        super(depthwise_separable_conv, self).__init__()
+class sliceSamp(nn.Module):
+    default_act = nn.GELU()
+    def __init__(self, nin, nout, kernel_size = 3, padding = 1, bias=False, act=True):
+        super(sliceSamp, self).__init__()
         self.depthwise = nn.Conv2d(nin, nin, kernel_size=kernel_size, padding=padding, groups=nin, bias=bias)
         self.pointwise = nn.Conv2d(nin, nout, kernel_size=1, bias=bias)
+        self.bn = nn.BatchNorm2d(nout)
+        self.act = self.default_act if act is True else act if isinstance(act, nn.Module) else nn.Identity()
 
     def forward(self, x):
-        out = self.depthwise(x)
+        h,w = x.size()[2:]
+        x_slice = []
+        x_slice.append(x[:,:,0:h//2,0:w//2])
+        x_slice.append(x[:,:,0:h//2,w//2:w])
+        x_slice.append(x[:,:,h//2:h,0:w//2])
+        x_slice.append(x[:,:,h//2:h,w//2:w])
+        out = self.depthwise(torch.cat(x_slice, 1))
+        out = self.bn(out)
+        out = self.act(out)
         out = self.pointwise(out)
+        out = self.bn(out)
+        out = self.act(out)
         return out
+    
+class Conv_sliceSamp_Attn(nn.Module):
+    """Standard convolution with args(ch_in, ch_out, kernel, stride, padding, groups, dilation, activation)."""
+
+    default_act = nn.SiLU()  # default activation
+
+    def __init__(self, c1, c2, k=1, s=1, p=None, g=1, d=1, act=True):
+        """Initialize Conv layer with given arguments including activation."""
+        super().__init__()
+        self.conv = nn.Conv2d(c1, c2, k, s, autopad(k, p, d), groups=g, dilation=d, bias=False)
+        self.bn = nn.BatchNorm2d(c2)
+        self.act = self.default_act if act is True else act if isinstance(act, nn.Module) else nn.Identity()
+        self.slice_samp = sliceSamp(c2, c2, kernel_size = 3, padding = 1, bias=False, act=True)  # GAP layer
+        self.ca = ChannelAttention(c1)
+        self.sa = SpatialAttention()
+
+    def forward(self, x):
+        """Apply convolution, batch normalization and activation to input tensor."""
+        x = self.ca(x)
+        x = self.act(self.bn(self.conv(x)))
+        x = self.slice_samp(x)
+        x = self.sa(x)
+        return x
+
+    def forward_fuse(self, x):
+        """Perform transposed convolution of 2D data."""
+        x = self.ca(x)
+        x = self.act(self.conv(x))
+        x = self.slice_samp(x)
+        x = self.sa(x)
+        return x
     
 class Conv(nn.Module):
     """Standard convolution with args(ch_in, ch_out, kernel, stride, padding, groups, dilation, activation)."""
