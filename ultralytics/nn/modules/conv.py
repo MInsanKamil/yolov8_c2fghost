@@ -336,7 +336,21 @@ class Conv_Avg_Pooling(nn.Module):
         x = self.act(self.conv(x))
         x = self.avg_pool(x)
         return x
-    
+class mixedPool(nn.Module):
+    def __init__(self,kernel_size, stride, padding=0, alpha=0.5):
+        # nn.Module.__init__(self)
+        super(mixedPool, self).__init__()
+        alpha = torch.FloatTensor([alpha])
+        self.alpha = nn.Parameter(alpha)  # nn.Parameter is special Variable
+        self.kernel_size = kernel_size
+        self.stride = stride
+        self.padding = padding
+
+    def forward(self, x):
+        x = self.alpha * F.max_pool2d(x, self.kernel_size, self.stride, self.padding) + (
+                    1 - self.alpha) * F.avg_pool2d(x, self.kernel_size, self.stride, self.padding)
+        return x
+     
 class Conv_Mix_Pooling_Dropout_Attn(nn.Module):
     """Standard convolution with args(ch_in, ch_out, kernel, stride, padding, groups, dilation, activation)."""
 
@@ -347,9 +361,8 @@ class Conv_Mix_Pooling_Dropout_Attn(nn.Module):
         super().__init__()
         self.conv = nn.Conv2d(c1, c2, k, s, autopad(k, p, d), groups=g, dilation=d, bias=False)
         self.bn = nn.BatchNorm2d(c2)
-        self.act = self.default_act if act is True else act if isinstance(act, nn.Module) else nn.Identity()
-        self.avg_pool = nn.AvgPool2d(3, stride=2)
-        self.max_pool = nn.MaxPool2d(3, stride=2)  # GAP layer
+        self.act = self.default_act if act is True else act if isinstance(act, nn.Module) else nn.Identity() # GAP layer
+        self.mix_pool = mixedPool(3, 2)
         self.dropout = nn.Dropout(p=0.2)
         self.ca = ChannelAttention(c1)
         self.sa = SpatialAttention()
@@ -359,10 +372,8 @@ class Conv_Mix_Pooling_Dropout_Attn(nn.Module):
         x = self.ca(x)
         x = self.act(self.bn(self.conv(x)))
         x = self.dropout(x)
-        avg = self.avg_pool(x)
-        max = self.max_pool(x)
-        mix =torch.cat((avg, max), 0)
-        x = self.sa(mix)
+        x = self.mix_pool(x)
+        x = self.sa(x)
         return x
 
     def forward_fuse(self, x):
@@ -370,10 +381,8 @@ class Conv_Mix_Pooling_Dropout_Attn(nn.Module):
         x = self.ca(x)
         x = self.act(self.conv(x))
         x = self.dropout(x)
-        avg = self.avg_pool(x)
-        max = self.max_pool(x)
-        mix =torch.cat((avg, max), 1)
-        x = self.sa(mix)
+        x = self.mix_pool(x)
+        x = self.sa(x)
         return x
 
 class Conv_Avg_Pooling_Attn(nn.Module):
