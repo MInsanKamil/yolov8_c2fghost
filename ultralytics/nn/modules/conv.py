@@ -35,10 +35,12 @@ __all__ = (
     "Conv_Avg_Pooling",
     "Avg_Pooling_Conv",
     "Conv_3",
+    "CBAM_Conv_Avg_Pooling",
     "Conv_Avg_Pooling_Attn",
     "Conv_Mix_Pooling_Dropout_Attn",
     "Conv_Attn",
-    "Conv_Avg_Pooling_Attn_Dropout"
+    "Conv_Avg_Pooling_Attn_Dropout",
+    "CBAM_Conv"
 )
 
 def conv_bn(inp, oup, stride):
@@ -545,7 +547,7 @@ class CBAM_Conv_Fractional_Max_Pooling(nn.Module):
         self.bn = nn.BatchNorm2d(c2)
         self.act = self.default_act if act is True else act if isinstance(act, nn.Module) else nn.Identity()
         self.fractional_max_pool = nn.FractionalMaxPool2d(3, output_ratio=(0.25, 0.25))
-        self.cbam = CBAM(c2,3)
+        self.cbam = CBAM(c2)
 
     def forward(self, x):
         """Apply convolution, batch normalization and activation to input tensor."""
@@ -558,6 +560,59 @@ class CBAM_Conv_Fractional_Max_Pooling(nn.Module):
         """Perform transposed convolution of 2D data."""
         x = self.act(self.conv(x))
         x = self.fractional_max_pool(x)
+        x = self.cbam(x)
+        return x
+    
+class CBAM_Conv_Avg_Pooling(nn.Module):
+    """Standard convolution with args(ch_in, ch_out, kernel, stride, padding, groups, dilation, activation)."""
+
+    default_act = nn.SiLU()  # default activation
+
+    def __init__(self, c1, c2, k=1, s=1, p=None, g=1, d=1, act=True):
+        """Initialize Conv layer with given arguments including activation."""
+        super().__init__()
+        self.conv = nn.Conv2d(c1, c2, k, s, autopad(k, p, d), groups=g, dilation=d, bias=False)
+        self.bn = nn.BatchNorm2d(c2)
+        self.act = self.default_act if act is True else act if isinstance(act, nn.Module) else nn.Identity()
+        self.avg_pool = nn.AvgPool2d(3, stride=2)
+        self.cbam = CBAM(c2)
+
+    def forward(self, x):
+        """Apply convolution, batch normalization and activation to input tensor."""
+        x = self.act(self.bn(self.conv(x)))
+        x = self.avg_pool(x)
+        x = self.cbam(x)
+        return x
+
+    def forward_fuse(self, x):
+        """Perform transposed convolution of 2D data."""
+        x = self.act(self.conv(x))
+        x = self.avg_pool(x)
+        x = self.cbam(x)
+        return x
+    
+class CBAM_Conv(nn.Module):
+    """Standard convolution with args(ch_in, ch_out, kernel, stride, padding, groups, dilation, activation)."""
+
+    default_act = nn.SiLU()  # default activation
+
+    def __init__(self, c1, c2, k=1, s=1, p=None, g=1, d=1, act=True):
+        """Initialize Conv layer with given arguments including activation."""
+        super().__init__()
+        self.conv = nn.Conv2d(c1, c2, k, s, autopad(k, p, d), groups=g, dilation=d, bias=False)
+        self.bn = nn.BatchNorm2d(c2)
+        self.act = self.default_act if act is True else act if isinstance(act, nn.Module) else nn.Identity()
+        self.cbam = CBAM(c2)
+
+    def forward(self, x):
+        """Apply convolution, batch normalization and activation to input tensor."""
+        x = self.act(self.bn(self.conv(x)))
+        x = self.cbam(x)
+        return x
+
+    def forward_fuse(self, x):
+        """Perform transposed convolution of 2D data."""
+        x = self.act(self.conv(x))
         x = self.cbam(x)
         return x
     
