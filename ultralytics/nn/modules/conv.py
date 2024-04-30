@@ -195,7 +195,7 @@ class sliceSamp(nn.Module):
     default_act = nn.GELU()
     def __init__(self, nin, nout, kernel_size = 3, padding = 1, bias=False, act=True):
         super(sliceSamp, self).__init__()
-        self.depthwise = nn.Conv2d(nin, nin, kernel_size=kernel_size, padding=padding, groups=nin, bias=bias)
+        self.depthwise = nn.Conv2d(nin, nin, kernel_size=kernel_size, padding=padding, groups=nout, bias=bias)
         self.pointwise = nn.Conv2d(nin, nout, kernel_size=1, bias=bias)
         self.bn = nn.BatchNorm2d(nout)
         self.act = self.default_act if act is True else act if isinstance(act, nn.Module) else nn.Identity()
@@ -203,10 +203,10 @@ class sliceSamp(nn.Module):
     def forward(self, x):
         h,w = x.size()[2:]
         x_slice = []
-        x_slice.append(x[:,:,0:h//2,0:w//2])
-        x_slice.append(x[:,:,0:h//2,w//2:w])
-        x_slice.append(x[:,:,h//2:h,0:w//2])
-        x_slice.append(x[:,:,h//2:h,w//2:w])
+        x_slice.append(x[:,:h//2,:w//2])
+        x_slice.append(x[:,:h//2,w//2:w])
+        x_slice.append(x[:,h//2:,:w//2])
+        x_slice.append(x[:,h//2:,w//2:w])
         out = self.depthwise(torch.cat(x_slice, 1))
         out = self.bn(out)
         out = self.act(out)
