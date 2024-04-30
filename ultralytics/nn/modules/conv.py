@@ -415,7 +415,7 @@ class Conv_Mix_Pooling_Dropout_Attn(nn.Module):
         self.bn = nn.BatchNorm2d(c2)
         self.act = self.default_act if act is True else act if isinstance(act, nn.Module) else nn.Identity() # GAP layer
         self.mix_pool = mixedPool(3, 2)
-        self.dropout = nn.Dropout(p=0.2)
+        self.dropout = nn.Dropout(p=0.0009)
         self.ca = ChannelAttention(c1)
         self.sa = SpatialAttention()
 
