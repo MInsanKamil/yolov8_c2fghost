@@ -816,8 +816,8 @@ class C2fGhost(nn.Module):
         """
         super().__init__()
         self.c = int(c2 * e)  # hidden channels
-        self.cv1 = Conv(c1, 2 * self.c, 1, 1)
-        self.cv2 = Conv((2 + n) * self.c, c2, 1)  # optional act=FReLU(c2)
+        self.cv1 = GhostConv(c1, 2 * self.c, 1, 1)
+        self.cv2 = GhostConv((2 + n) * self.c, c2, 1)  # optional act=FReLU(c2)
         self.m = nn.Sequential(*(GhostBottleneck(self.c,self.c) for _ in range(n)))
 
     def forward(self, x):
