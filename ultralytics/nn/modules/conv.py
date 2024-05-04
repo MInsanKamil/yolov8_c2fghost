@@ -282,7 +282,7 @@ class GhostConv(nn.Module):
         c_ = c2 // 2  # hidden channels
         self.cv1 = Conv(c1, c_, k, s, None, g, act=act)
         self.cv2 = Conv(c_, c_, 5, 1, None, c_, act=act)
-        self.bn = nn.BatchNorm2d(c_)
+        self.bn = nn.BatchNorm2d(c_//2)
         self.act = self.default_act if act is True else act if isinstance(act, nn.Module) else nn.Identity()
 
     def forward(self, x):
