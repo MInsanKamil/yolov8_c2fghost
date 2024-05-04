@@ -292,7 +292,6 @@ class GhostConv(nn.Module):
         x = self.ca(x)
         y = self.cv1(x)
         z = self.act(self.bn(torch.cat((y, self.sa(y)), 1)))
-        z = self.sa(z)
         return z
 
 class Conv_Prune(nn.Module):
