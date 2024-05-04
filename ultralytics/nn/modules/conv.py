@@ -279,11 +279,9 @@ class GhostConv(nn.Module):
         activation.
         """
         super().__init__()
-        c_ = c2 // 4  # hidden channels
+        c_ = c2 // 2  # hidden channels
         self.cv1 = Conv(c1, c_, k, s, None, g, act=act)
         self.cv2 = Conv(c_, c_, 5, 1, None, c_, act=act)
-        self.cv3 = Conv(c_, c_, 7, 1, None, c_, act=act)
-        self.cv4 = Conv(c_, c_, 9, 1, None, c_, act=act)
         self.bn = nn.BatchNorm2d(c2)
         self.act = self.default_act if act is True else act if isinstance(act, nn.Module) else nn.Identity()
         self.ca = ChannelAttention(c1)
@@ -292,10 +290,7 @@ class GhostConv(nn.Module):
         """Forward propagation through a Ghost Bottleneck layer with skip connection."""
         x = self.ca(x)
         y = self.cv1(x)
-        a = self.cv2(y)
-        b = self.cv3(a)
-        c = self.cv4(b)
-        z = self.act(self.bn(torch.cat((y, a, b, c), 1)))
+        z = self.act(self.bn(torch.cat((y, self.cv2(y)), 1)))
         z = self.sa(z)
         return z
 
