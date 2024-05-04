@@ -269,7 +269,27 @@ class Conv(nn.Module):
     def forward_fuse(self, x):
         """Perform transposed convolution of 2D data."""
         return self.act(self.conv(x))
-    
+
+class GhostConv(nn.Module):
+    """Ghost Convolution https://github.com/huawei-noah/ghostnet."""
+
+    default_act = nn.SiLU()  # default activation
+    def __init__(self, c1, c2, k=1, s=1, g=1, act=True):
+        """Initializes the GhostConv object with input channels, output channels, kernel size, stride, groups and
+        activation.
+        """
+        super().__init__()
+        c_ = c2 // 2  # hidden channels
+        self.cv1 = Conv(c1, c_, k, s, None, g, act=act)
+        self.cv2 = Conv(c_, c_, 5, 1, None, c_, act=act)
+        self.bn = nn.BatchNorm2d(c_)
+        self.act = self.default_act if act is True else act if isinstance(act, nn.Module) else nn.Identity()
+
+    def forward(self, x):
+        """Forward propagation through a Ghost Bottleneck layer with skip connection."""
+        y = self.cv1(x)
+        return self.act(self.bn(torch.cat((y, self.cv2(y)), 1)))
+
 class Conv_Prune(nn.Module):
     """Standard convolution with args(ch_in, ch_out, kernel, stride, padding, groups, dilation, activation)."""
 
@@ -1077,22 +1097,7 @@ class Focus(nn.Module):
         # return self.conv(self.contract(x))
 
 
-class GhostConv(nn.Module):
-    """Ghost Convolution https://github.com/huawei-noah/ghostnet."""
 
-    def __init__(self, c1, c2, k=1, s=1, g=1, act=True):
-        """Initializes the GhostConv object with input channels, output channels, kernel size, stride, groups and
-        activation.
-        """
-        super().__init__()
-        c_ = c2 // 2  # hidden channels
-        self.cv1 = Conv(c1, c_, k, s, None, g, act=act)
-        self.cv2 = Conv(c_, c_, 5, 1, None, c_, act=act)
-
-    def forward(self, x):
-        """Forward propagation through a Ghost Bottleneck layer with skip connection."""
-        y = self.cv1(x)
-        return torch.cat((y, self.cv2(y)), 1)
 
 
 class RepConv(nn.Module):
