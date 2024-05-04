@@ -281,7 +281,7 @@ class GhostConv(nn.Module):
         super().__init__()
         c_ = c2 // 2  # hidden channels
         self.cv1 = Conv(c1, c_, k, s, None, g, act=act)
-        self.m = nn.MaxPool2d(kernel_size=k, stride=1, padding=k // 2)
+        self.m = nn.Dropout(0.2)
         # self.cv2 = Conv(c_, c_, k, 1, None, c_, act=act)
         self.bn = nn.BatchNorm2d(c2)
         self.act = self.default_act if act is True else act if isinstance(act, nn.Module) else nn.Identity()
