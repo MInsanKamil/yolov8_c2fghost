@@ -291,8 +291,7 @@ class GhostConv(nn.Module):
         """Forward propagation through a Ghost Bottleneck layer with skip connection."""
         x = self.ca(x)
         y = self.cv1(x)
-        z = self.act(self.bn(y))
-        # z = self.act(self.bn(torch.cat((y, self.m(y)), 1)))
+        z = self.act(self.bn(torch.cat((y, self.sa(y)), 1)))
         z = self.sa(z)
         return z
 
