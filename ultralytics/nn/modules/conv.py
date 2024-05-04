@@ -281,9 +281,9 @@ class GhostConv(nn.Module):
         super().__init__()
         c_ = c2 // 4  # hidden channels
         self.cv1 = Conv(c1, c_, k, s, None, g, act=act)
-        self.cv2 = Conv(c_, c_, k, 1, None, c_, act=act)
-        self.cv3 = Conv(c_, c_, k, 1, None, c_, act=act)
-        self.cv4 = Conv(c_, c_, k, 1, None, c_, act=act)
+        self.cv2 = Conv(c_, c_, 4, 1, None, c_, act=act)
+        self.cv3 = Conv(c_, c_, 5, 1, None, c_, act=act)
+        self.cv4 = Conv(c_, c_, 6, 1, None, c_, act=act)
         self.bn = nn.BatchNorm2d(c2)
         self.act = self.default_act if act is True else act if isinstance(act, nn.Module) else nn.Identity()
         self.ca = ChannelAttention(c1)
