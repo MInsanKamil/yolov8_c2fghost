@@ -8,6 +8,7 @@ import torch
 import torch.nn as nn
 from torch.autograd import Variable
 import torch.nn.functional as F
+from .block import SPPF
 import torch.nn.utils.prune as prune
 
 __all__ = (
@@ -287,11 +288,13 @@ class GhostConv(nn.Module):
         self.act = self.default_act if act is True else act if isinstance(act, nn.Module) else nn.Identity()
         self.ca = ChannelAttention(c1)
         self.sa = SpatialAttention()
+        self.sppf = SPPF(c_, c_, k=5)
     def forward(self, x):
         """Forward propagation through a Ghost Bottleneck layer with skip connection."""
         x = self.ca(x)
         y = self.cv1(x)
-        z = self.act(self.bn(torch.cat((y, y), 1)))
+        z = self.act(self.bn(torch.cat((y, self.sppf(y)), 1)))
+        z = self.sa(z)
         return z
 
 class Conv_Prune(nn.Module):
