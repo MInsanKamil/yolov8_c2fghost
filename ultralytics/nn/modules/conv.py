@@ -646,7 +646,7 @@ class DS_Conv(nn.Module):
     def __init__(self, nin, nout, kernel_size = 3,stride = 1, padding = 1, bias=False, act=True):
         super(DS_Conv, self).__init__()
         self.depthwise = nn.Conv2d(nin, nin, kernel_size=kernel_size,stride=1, padding=padding, groups=nin, bias=bias)
-        self.pointwise = nn.Conv2d(nin, nout, kernel_size=1,stride=2, bias=bias)
+        self.pointwise = nn.Conv2d(nin, nout, kernel_size=1,stride=stride, bias=bias)
         self.bn = nn.BatchNorm2d(nout)
         self.act = self.default_act if act is True else act if isinstance(act, nn.Module) else nn.Identity()
     def forward(self, x):
