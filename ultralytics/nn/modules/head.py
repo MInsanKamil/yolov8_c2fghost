@@ -35,9 +35,9 @@ class Detect(nn.Module):
         self.stride = torch.zeros(self.nl)  # strides computed during build
         c2, c3 = max((16, ch[0] // 4, self.reg_max * 4)), max(ch[0], min(self.nc, 100))  # channels
         self.cv2 = nn.ModuleList(
-            nn.Sequential(Conv_Avg_Pooling_Attn(x, c2, 3), Conv_Avg_Pooling_Attn(c2, c2, 3), nn.Conv2d(c2, 4 * self.reg_max, 1)) for x in ch
+            nn.Sequential(GhostConv(x, c2, 3), GhostConv(c2, c2, 3), nn.Conv2d(c2, 4 * self.reg_max, 1)) for x in ch
         )
-        self.cv3 = nn.ModuleList(nn.Sequential(Conv_Avg_Pooling_Attn(x, c3, 3), Conv_Avg_Pooling_Attn(c3, c3, 3), nn.Conv2d(c3, self.nc, 1)) for x in ch)
+        self.cv3 = nn.ModuleList(nn.Sequential(GhostConv(x, c3, 3), GhostConv(c3, c3, 3), nn.Conv2d(c3, self.nc, 1)) for x in ch)
         self.dfl = DFL(self.reg_max) if self.reg_max > 1 else nn.Identity()
 
     def forward(self, x):
