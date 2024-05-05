@@ -285,13 +285,14 @@ class GhostConv(nn.Module):
         # self.cv2 = Conv(c_, c_, k, 1, None, c_, act=act)
         self.bn = nn.BatchNorm2d(c2)
         self.act = self.default_act if act is True else act if isinstance(act, nn.Module) else nn.Identity()
-        # self.ca = ChannelAttention(c1)
+        self.dropout = nn.Dropout(p=0.1)
+        self.ca = ChannelAttention(c1)
         self.sa = SpatialAttention()
     def forward(self, x):
         """Forward propagation through a Ghost Bottleneck layer with skip connection."""
-        # x = self.ca(x)
+        x = self.ca(x)
         y = self.cv1(x)
-        z = self.act(self.bn(torch.cat((y, self.sa(y)), 1)))
+        z = self.act(self.bn(torch.cat((y, self.sa(self.dropout(y))), 1)))
         return z
 
 class Conv_Prune(nn.Module):
