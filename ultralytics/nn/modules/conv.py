@@ -13,6 +13,7 @@ import torch.nn.utils.prune as prune
 __all__ = (
     "Conv",
     "Conv2",
+    "GhostConv_Without_BN_Act",
     "LightConv",
     "CBAM_Conv_Avg_Pooling",
     "Conv_sliceSamp_Attn",
@@ -292,6 +293,25 @@ class GhostConv(nn.Module):
         x = self.ca(x)
         y = self.cv1(x)
         z = self.act(self.bn(torch.cat((y, self.sa(y)), 1)))
+        return z
+    
+class GhostConv_Without_BN_Act(nn.Module):
+    """Ghost Convolution https://github.com/huawei-noah/ghostnet."""
+
+    def __init__(self, c1, c2, k=1, s=1, p=None, g=1, d=1, act=True):
+        """Initializes the GhostConv object with input channels, output channels, kernel size, stride, groups and
+        activation.
+        """
+        super().__init__()
+        c_ = c2 // 2  # hidden channels
+        self.cv1 = nn.Conv2d(c1, c_, k, s, autopad(k, p, d), groups=g, dilation=d, bias=False)
+        self.ca = ChannelAttention(c1)
+        self.sa = SpatialAttention()
+    def forward(self, x):
+        """Forward propagation through a Ghost Bottleneck layer with skip connection."""
+        x = self.ca(x)
+        y = self.cv1(x)
+        z = torch.cat((y, self.sa(y)), 1)
         return z
 
 class Conv_Prune(nn.Module):
