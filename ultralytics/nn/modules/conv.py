@@ -274,24 +274,19 @@ class Conv(nn.Module):
 class GhostConv(nn.Module):
     """Ghost Convolution https://github.com/huawei-noah/ghostnet."""
 
-    default_act = nn.SiLU()  # default activation
-    def __init__(self, c1, c2, k=1, s=1, p=None, g=1, d=1, act=True):
+    def __init__(self, c1, c2, k=1, s=1, g=1, act=True):
         """Initializes the GhostConv object with input channels, output channels, kernel size, stride, groups and
         activation.
         """
         super().__init__()
         c_ = c2 // 2  # hidden channels
-        self.cv1 = nn.Conv2d(c1, c_, k, s, autopad(k, p, d), groups=g, dilation=d, bias=False)
-        self.bn = nn.BatchNorm2d(c2)
-        self.act = self.default_act if act is True else act if isinstance(act, nn.Module) else nn.Identity()
-        self.ca = ChannelAttention(c1)
-        self.sa = SpatialAttention()
-        self.cbam = CBAM(c_)
+        self.cv1 = Conv(c1, c_, k, s, None, g, act=act)
+        self.cv2 = Conv(c_, c_, 5, 1, None, c_, act=act)
+
     def forward(self, x):
         """Forward propagation through a Ghost Bottleneck layer with skip connection."""
         y = self.cv1(x)
-        z = self.act(self.bn(torch.cat((y, self.cbam(y)), 1)))
-        return z
+        return torch.cat((y, self.cv2(y)), 1)
     
 class GhostConv_Without_BN_Act(nn.Module):
     """Ghost Convolution https://github.com/huawei-noah/ghostnet."""
