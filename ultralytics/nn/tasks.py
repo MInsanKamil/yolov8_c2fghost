@@ -858,7 +858,6 @@ def parse_model(d, ch, verbose=True):  # model_dict, input_channels(3)
             Conv_Dropout,
             Conv_Fractional_Max_Pooling_Attn,
             LightConv,
-            CBAM_Module,
             GhostConv_Without_BN_Act,
             DS_Conv,
             DS_Conv_Attn,
@@ -936,6 +935,8 @@ def parse_model(d, ch, verbose=True):  # model_dict, input_channels(3)
             if m in (BottleneckCSP, C1, C2, C2f, C2fAttn, C3, C3TR, C3Ghost,C2fADown,C2f_Conv_Prune,C2f_Ghost_Conv,C2f_DS_Conv,C2f_Conv_Attn,C2f_sa,C2fGhost,C2fAttnGhost,C2f_Double_Stride,C2f_Stride,C2f_MaxPool,C2f_Double_MaxPool,C2f_Upsample,C2f_Stride_Maxpool,C2f_Fractional_MaxPool,C3f_Double_Stride, C3x, RepC3):
                 args.insert(2, n)  # number of repeats
                 n = 1
+        elif m is CBAM_Module:
+            args = [ch[f], *args]
         elif m is AIFI:
             args = [ch[f], *args]
         elif m in (HGStem, HGBlock):
