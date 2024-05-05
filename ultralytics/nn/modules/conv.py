@@ -284,9 +284,11 @@ class GhostConv(nn.Module):
         self.cv1 = nn.Conv2d(c1, c_, k, s, autopad(k, p, d), groups=g, dilation=d, bias=False)
         self.bn = nn.BatchNorm2d(c2)
         self.act = self.default_act if act is True else act if isinstance(act, nn.Module) else nn.Identity()
+        self.ca = ChannelAttention(c1)
         self.sa = SpatialAttention()
     def forward(self, x):
         """Forward propagation through a Ghost Bottleneck layer with skip connection."""
+        x = self.ca(x)
         y = self.cv1(x)
         z = self.act(self.bn(torch.cat((y, self.sa(y)), 1)))
         return z
