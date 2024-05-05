@@ -274,13 +274,13 @@ class GhostConv(nn.Module):
     """Ghost Convolution https://github.com/huawei-noah/ghostnet."""
 
     default_act = nn.SiLU()  # default activation
-    def __init__(self, c1, c2, k=1, s=1, g=1, act=True):
+    def __init__(self, c1, c2, k=1, s=1, p=None, g=1, d=1, act=True):
         """Initializes the GhostConv object with input channels, output channels, kernel size, stride, groups and
         activation.
         """
         super().__init__()
         c_ = c2 // 2  # hidden channels
-        self.cv1 = Conv(c1, c_, k, s, None, g, act=act)
+        self.cv1 = nn.Conv2d(c1, c_, k, s, autopad(k, p, d), groups=g, dilation=d, bias=False)
         # self.m = nn.Dropout(0.2)
         # self.cv2 = Conv(c_, c_, k, 1, None, c_, act=act)
         self.bn = nn.BatchNorm2d(c2)
