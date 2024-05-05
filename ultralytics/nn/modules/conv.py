@@ -34,6 +34,7 @@ __all__ = (
     "ChannelAttention",
     "SpatialAttention",
     "CBAM",
+    "CBAM_Module",
     "Concat",
     "RepConv",
     "Conv_Avg_Pooling",
@@ -1255,6 +1256,19 @@ class CBAM(nn.Module):
     """Convolutional Block Attention Module."""
 
     def __init__(self, c1, kernel_size=7):
+        """Initialize CBAM with given input channel (c1) and kernel size."""
+        super().__init__()
+        self.channel_attention = ChannelAttention(c1)
+        self.spatial_attention = SpatialAttention(kernel_size)
+
+    def forward(self, x):
+        """Applies the forward pass through C1 module."""
+        return self.spatial_attention(self.channel_attention(x))
+    
+class CBAM_Module(nn.Module):
+    """Convolutional Block Attention Module."""
+
+    def __init__(self, c1,c2, kernel_size=7):
         """Initialize CBAM with given input channel (c1) and kernel size."""
         super().__init__()
         self.channel_attention = ChannelAttention(c1)
