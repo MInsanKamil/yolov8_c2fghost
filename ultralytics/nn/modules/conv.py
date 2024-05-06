@@ -282,12 +282,13 @@ class GhostConv(nn.Module):
         super().__init__()
         c_ = c2 // 2  # hidden channels
         self.cv1 = Conv(c1, c_, k, s, None, g, act=act)
-        self.cv2 = DS_Conv(c_, c_, 1, 1)
+        # self.cv2 = DS_Conv(c_, c_, 1, 1)
+        self.m = nn.MaxPool2d(kernel_size=k, stride=1, padding=k // 2)
 
     def forward(self, x):
         """Forward propagation through a Ghost Bottleneck layer with skip connection."""
         y = self.cv1(x)
-        return torch.cat((y, self.cv2(y)), 1)
+        return torch.cat((y, self.m(y)), 1)
     
 class GhostConv_Without_BN_Act(nn.Module):
     """Ghost Convolution https://github.com/huawei-noah/ghostnet."""
