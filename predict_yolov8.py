@@ -24,7 +24,7 @@ def main():
     cap = cv2.VideoCapture(0)
     cap.set(cv2.CAP_PROP_FRAME_WIDTH,frame_width)
     cap.set(cv2.CAP_PROP_FRAME_HEIGHT, frame_height)
-    model = YOLO("best.pt")
+    model = YOLO("best_nopool.pt")
     prev_frame_time = 0
     new_frame_time = 0
 
