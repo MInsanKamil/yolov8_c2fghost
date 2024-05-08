@@ -289,6 +289,30 @@ class GhostConv(nn.Module):
         """Forward propagation through a Ghost Bottleneck layer with skip connection."""
         y = self.cv1(x)
         return torch.cat((y, self.cv2(y)), 1)
+
+class GhostConv_Attn_Avg_Pool(nn.Module):
+    """Ghost Convolution https://github.com/huawei-noah/ghostnet."""
+
+    def __init__(self, c1, c2, k=1, s=1, g=1, act=True):
+        """Initializes the GhostConv object with input channels, output channels, kernel size, stride, groups and
+        activation.
+        """
+        super().__init__()
+        c_ = c2 // 2  # hidden channels
+        self.cv1 = Conv(c1, c_, k, s, None, g, act=act)
+        self.cv2 = Conv(c_, c_, 1, 1, None, c_, act=act)
+        self.ca2 = ChannelAttention(c_)
+        self.ca = ChannelAttention(c1)
+        self.sa = SpatialAttention()
+        self.avg_pool = nn.AvgPool2d(3, stride=2)
+
+    def forward(self, x):
+        """Forward propagation through a Ghost Bottleneck layer with skip connection."""
+        x = self.ca(x)
+        y = self.cv1(x)
+        z = torch.cat((y, self.ca2(self.cv2(y))), 1)
+        z = self.avg_pool(z)
+        return self.sa(z)
     
 class GhostConv_Attn(nn.Module):
     """Ghost Convolution https://github.com/huawei-noah/ghostnet."""
