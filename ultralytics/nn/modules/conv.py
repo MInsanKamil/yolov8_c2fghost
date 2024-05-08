@@ -13,6 +13,7 @@ import torch.nn.utils.prune as prune
 __all__ = (
     "Conv",
     "Conv2",
+    "GhostConv_Attn",
     "GhostConv_Without_BN_Act",
     "LightConv",
     "CBAM_Conv_Avg_Pooling",
@@ -280,14 +281,35 @@ class GhostConv(nn.Module):
         activation.
         """
         super().__init__()
-        c_ = c2 * 3/4  # hidden channels
+        c_ = c2 // 2  # hidden channels
         self.cv1 = Conv(c1, c_, k, s, None, g, act=act)
-        self.cv2 = Conv(c_, 1/4*c2, 1, 1, None, c_, act=act)
+        self.cv2 = Conv(c_, c_, 1, 1, None, c_, act=act)
 
     def forward(self, x):
         """Forward propagation through a Ghost Bottleneck layer with skip connection."""
         y = self.cv1(x)
         return torch.cat((y, self.cv2(y)), 1)
+    
+class GhostConv_Attn(nn.Module):
+    """Ghost Convolution https://github.com/huawei-noah/ghostnet."""
+
+    def __init__(self, c1, c2, k=1, s=1, g=1, act=True):
+        """Initializes the GhostConv object with input channels, output channels, kernel size, stride, groups and
+        activation.
+        """
+        super().__init__()
+        c_ = c2 // 2  # hidden channels
+        self.cv1 = Conv(c1, c_, k, s, None, g, act=act)
+        self.cv2 = Conv(c_, c_, 1, 1, None, c_, act=act)
+        self.ca = ChannelAttention(c1)
+        self.sa = SpatialAttention()
+
+    def forward(self, x):
+        """Forward propagation through a Ghost Bottleneck layer with skip connection."""
+        x = self.ca(x)
+        y = self.cv1(x)
+        z = torch.cat((y, self.cv2(y)), 1)
+        return self.sa(z)
     
 class GhostConv_Without_BN_Act(nn.Module):
     """Ghost Convolution https://github.com/huawei-noah/ghostnet."""
