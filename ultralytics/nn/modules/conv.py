@@ -15,6 +15,7 @@ __all__ = (
     "Conv2",
     "GhostConv_Attn",
     "GhostConv_Without_BN_Act",
+    "GhostConv_Attn_Avg_Pool",
     "LightConv",
     "CBAM_Conv_Avg_Pooling",
     "Conv_sliceSamp_Attn",
