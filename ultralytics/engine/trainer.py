@@ -14,6 +14,7 @@ import warnings
 from copy import deepcopy
 from datetime import datetime, timedelta
 from pathlib import Path
+import pickle
 
 import numpy as np
 import torch
@@ -484,8 +485,8 @@ class BaseTrainer:
         ckpt = {
             "epoch": self.epoch,
             "best_fitness": self.best_fitness,
-            "model": deepcopy(de_parallel(self.model)).half(),
-            "ema": deepcopy(self.ema.ema).half(),
+            "model": pickle.loads(pickle.dumps(de_parallel(self.model), -1)).half(),
+            "ema": pickle.loads(pickle.dumps(self.ema.ema, -1)).half(),
             "updates": self.ema.updates,
             "optimizer": self.optimizer.state_dict(),
             "train_args": vars(self.args),  # save as dict
