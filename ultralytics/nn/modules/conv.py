@@ -312,7 +312,7 @@ class GhostConv_Modification(nn.Module):
     def forward(self, x):
         """Forward propagation through a Ghost Bottleneck layer with skip connection."""
         y = self.cv1(x)
-        return torch.cat((y,self.cv2(y), self.u(self.cv2(self.m(x))), self.u(self.cv2(self.fr(x))), self.u(self.cv2(self.a(x)))), 1)
+        return torch.cat((y,self.cv2(y), self.u(self.cv2(self.m(y))), self.u(self.cv2(self.fr(y))), self.u(self.cv2(self.a(y)))), 1)
 
 class GhostConv_Attn_Avg_Pool(nn.Module):
     """Ghost Convolution https://github.com/huawei-noah/ghostnet."""
