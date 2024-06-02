@@ -306,14 +306,15 @@ class GhostConv_Modification(nn.Module):
         self.cv1 = Conv(c1, c_, k, s, None, g, act=act)
         # self.cv2 = Conv(c_, c_//2, 1, 1, None, math.gcd(c_, c_//2), act=act)
         self.cv2 = Conv(c_, c_//4, 1, 1, None, math.gcd(c_, c_//4), act=act)
-        self.m = nn.MaxPool2d(3, stride=1, padding=1)
-        self.a = nn.AvgPool2d(3, stride=1, padding=1)
-        self.b = torchvision.transforms.GaussianBlur(3, sigma=(0.1, 2.0))
+        self.m = nn.MaxPool2d(3, stride=2, padding=1)
+        self.a = nn.AvgPool2d(3, stride=2, padding=1)
+        self.f = nn.FractionalMaxPool2d(3, output_ratio=(0.5, 0.5))
+        self.u = nn.Upsample(scale_factor=2, mode='nearest')
 
     def forward(self, x):
         """Forward propagation through a Ghost Bottleneck layer with skip connection."""
         y = self.cv1(x)
-        return torch.cat((y, self.cv2(y), self.m(self.cv2(y)), self.a(self.cv2(y)), self.b(self.cv2(y))), 1)
+        return torch.cat((y, self.cv2(y), self.u(self.m(self.cv2(y))), self.u(self.a(self.cv2(y))), self.u(self.f(self.cv2(y)))), 1)
 
 class GhostConv_Attn_Avg_Pool(nn.Module):
     """Ghost Convolution https://github.com/huawei-noah/ghostnet."""
