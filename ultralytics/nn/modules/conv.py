@@ -303,7 +303,7 @@ class GhostConv_Modification(nn.Module):
         super().__init__()
         c_ = c2 // 2  # hidden channels
         self.cv1 = Conv(c1, c_, k, s, None, g, act=act)
-        self.cv2 = Conv(c_, c_//2, 1, 1, None, groups=math.gcd(c_, c_//2), act=act)
+        self.cv2 = Conv(c_, c_//2, 1, 1, None, math.gcd(c_, c_//2), act=act)
         self.m = nn.MaxPool2d(3, stride=1)
 
     def forward(self, x):
