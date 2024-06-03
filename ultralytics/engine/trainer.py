@@ -485,8 +485,8 @@ class BaseTrainer:
         ckpt = {
             "epoch": self.epoch,
             "best_fitness": self.best_fitness,
-            "model": pickle.loads(pickle.dumps(de_parallel(self.model), -1)).half(),
-            "ema": pickle.loads(pickle.dumps(self.ema.ema, -1)).half(),
+            "model": deepcopy(de_parallel(self.model)).half(),
+            "ema": deepcopy(self.ema.ema).half(),
             "updates": self.ema.updates,
             "optimizer": self.optimizer.state_dict(),
             "train_args": vars(self.args),  # save as dict
