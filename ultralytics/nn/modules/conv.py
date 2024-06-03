@@ -1342,6 +1342,7 @@ class CBAM_Module(nn.Module):
     def __init__(self, c1, kernel_size=7):
         """Initialize CBAM with given input channel (c1) and kernel size."""
         super().__init__()
+        self.a = nn.AvgPool2d(3,2,1)
         self.channel_attention = ChannelAttention(c1)
         self.spatial_attention = SpatialAttention(kernel_size)
 
