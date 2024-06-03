@@ -4,6 +4,7 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+import torchvision
 
 from .conv import Conv,Conv_Attn,DS_Conv, DWConv, GhostConv, LightConv, RepConv, autopad, Conv_Max_Pooling, Conv_SP, Conv_Prune
 from .transformer import TransformerBlock
@@ -57,7 +58,8 @@ __all__ = (
     "SPPF_Conv_Prune",
     "SPPF_Conv_Attn",
     "SPPF_Ghost",
-    "C2f_Ghost_Conv"
+    "C2f_Ghost_Conv",
+    "C2f_Equalize"
 )
 
 
@@ -493,6 +495,33 @@ class C2f(nn.Module):
         y = list(self.cv1(x).split((self.c, self.c), 1))
         y.extend(m(y[-1]) for m in self.m)
         return self.cv2(torch.cat(y, 1))
+    
+class C2f_Equalize(nn.Module):
+    """Faster Implementation of CSP Bottleneck with 2 convolutions."""
+
+    def __init__(self, c1, c2, n=1, shortcut=False, g=1, e=0.5):
+        """Initialize CSP bottleneck layer with two convolutions with arguments ch_in, ch_out, number, shortcut, groups,
+        expansion.
+        """
+        super().__init__()
+        self.c = int(c2 * e)  # hidden channels
+        self.cv1 = Conv(c1, 2 * self.c, 1, 1)
+        self.cv2 = Conv((2 + n) * self.c, c2, 1)  # optional act=FReLU(c2)
+        self.m = nn.ModuleList(Bottleneck(self.c, self.c, shortcut, g, k=((3, 3), (3, 3)), e=1.0) for _ in range(n))
+        self.eq = torchvision.transforms.RandomEqualize(p=0.2)
+
+    def forward(self, x):
+        """Forward pass through C2f layer."""
+        y = list(self.cv1(x).chunk(2, 1))
+        y.extend(m(y[-1]) for m in self.m)
+        return self.eq(self.cv2(torch.cat(y, 1)))
+        
+
+    def forward_split(self, x):
+        """Forward pass using split() instead of chunk()."""
+        y = list(self.cv1(x).split((self.c, self.c), 1))
+        y.extend(m(y[-1]) for m in self.m)
+        return self.eq(self.cv2(torch.cat(y, 1)))
     
 class C2f_Ghost_Conv(nn.Module):
     """Faster Implementation of CSP Bottleneck with 2 convolutions."""
