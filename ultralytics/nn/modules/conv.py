@@ -38,6 +38,7 @@ __all__ = (
     "CBAM",
     "CBAM_Module",
     "Concat",
+    "Concat_Feature_Map",
     "RepConv",
     "Conv_Avg_Pooling",
     "Avg_Pooling_Conv",
@@ -1433,4 +1434,19 @@ class Concat(nn.Module):
         """Forward pass for the YOLOv8 mask Proto module."""
         return torch.cat(x, self.d)
     
+
+class Concat_Feature_Map(nn.Module):
+    """Concatenate a list of tensors along dimension."""
+
+    def __init__(self, dimension=1):
+        """Concatenates a list of tensors along a specified dimension."""
+        super().__init__()
+        self.d = dimension
+        self.pool1 = nn.AvgPool2d(3,8,1)
+        self.pool2 = nn.AvgPool2d(3,4,1)
+        self.pool3 = nn.AvgPool2d(3,2,1)
+
+    def forward(self, x):
+        """Forward pass for the YOLOv8 mask Proto module."""
+        return torch.cat((x[0], self.pool1(x[1]), self.pool2(x[2]), self.pool3(x[3])), self.d)
 
