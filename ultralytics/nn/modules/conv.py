@@ -13,6 +13,7 @@ import torch.nn.utils.prune as prune
 __all__ = (
     "Conv",
     "Conv2",
+    "Nothing",
     "GhostConv_Attn",
     "GhostConv_Without_BN_Act",
     "GhostConv_Attn_Avg_Pool",
@@ -1449,4 +1450,11 @@ class Concat_Feature_Map(nn.Module):
     def forward(self, x):
         """Forward pass for the YOLOv8 mask Proto module."""
         return torch.cat((x[0], self.pool1(x[1]), self.pool2(x[2]), self.pool3(x[3])), self.d)
+    
+class Nothing(nn.Module):
+    """Concatenate a list of tensors along dimension."""
+
+    def forward(self, x):
+        """Forward pass for the YOLOv8 mask Proto module."""
+        return x
 

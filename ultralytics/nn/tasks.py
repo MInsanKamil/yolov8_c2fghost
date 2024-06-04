@@ -8,7 +8,7 @@ import torch
 import torch.nn as nn
 
 from ultralytics.nn.modules.conv import(
-Concat_Feature_Map,LightConv,GhostConv_Modification,GhostConv_Attn_Avg_Pool,GhostConv_Attn,CBAM_Module,ChannelAttention_Pool,GhostConv_Without_BN_Act,DS_Conv,DS_Conv_Attn,Conv_Avg_Pooling_Attnv2,CBAM_Conv_Avg_Pooling,Conv_sliceSamp_Attn,Conv_Spatial_Attn,Conv_Avg_Pooling_Spatial_Attn,CBAM_Conv,CBAM_Conv_Avg_Pooling,Conv_Attn,Conv_Avg_Pooling_Attn_Dropout,Conv_Prune,Conv_Mix_Pooling_Dropout_Attn,Conv_Avg_Pooling_Attn,Conv_3,Conv_Avg_Pooling,Conv_Max_Pooling,Conv_Fractional_Max_Pooling,Conv_Dropout,Conv_Fractional_Max_Pooling_Attn,Conv_SP,CBAM_Conv_Fractional_Max_Pooling,Conv_S3Pool_Attn,Avg_Pooling_Conv
+Concat_Feature_Map,Nothing,LightConv,GhostConv_Modification,GhostConv_Attn_Avg_Pool,GhostConv_Attn,CBAM_Module,ChannelAttention_Pool,GhostConv_Without_BN_Act,DS_Conv,DS_Conv_Attn,Conv_Avg_Pooling_Attnv2,CBAM_Conv_Avg_Pooling,Conv_sliceSamp_Attn,Conv_Spatial_Attn,Conv_Avg_Pooling_Spatial_Attn,CBAM_Conv,CBAM_Conv_Avg_Pooling,Conv_Attn,Conv_Avg_Pooling_Attn_Dropout,Conv_Prune,Conv_Mix_Pooling_Dropout_Attn,Conv_Avg_Pooling_Attn,Conv_3,Conv_Avg_Pooling,Conv_Max_Pooling,Conv_Fractional_Max_Pooling,Conv_Dropout,Conv_Fractional_Max_Pooling_Attn,Conv_SP,CBAM_Conv_Fractional_Max_Pooling,Conv_S3Pool_Attn,Avg_Pooling_Conv
 )
 from ultralytics.nn.modules.block import(
     C2f_Equalize,C2f_Ghost_Conv,C2f_DS_Conv,C2f_Conv_Prune,C2f_Conv_Attn,C2fADown,C2f_sa,C2fGhost,C2fAttnGhost,C2f_Double_Stride,C2f_Stride,C2f_MaxPool, C2f_Double_MaxPool, C2f_Upsample,C2f_Stride_Maxpool,C2f_Fractional_MaxPool,C3f_Double_Stride,SPPF_Fractional,SPPF_Avg, SPPF_Conv_Prune, SPPF_Conv_Attn,SPPF_Ghost
@@ -954,6 +954,8 @@ def parse_model(d, ch, verbose=True):  # model_dict, input_channels(3)
         elif m is ResNetLayer:
             c2 = args[1] if args[3] else args[1] * 4
         elif m is nn.BatchNorm2d:
+            args = [ch[f]]
+        elif m is Nothing:
             args = [ch[f]]
         elif m is Concat:
             c2 = sum(ch[x] for x in f)
