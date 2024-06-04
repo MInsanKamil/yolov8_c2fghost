@@ -1443,12 +1443,11 @@ class Concat_Feature_Map(nn.Module):
         """Concatenates a list of tensors along a specified dimension."""
         super().__init__()
         self.d = dimension
-        self.pool1 = nn.AvgPool2d(3,4,1)
-        self.pool2 = nn.AvgPool2d(3,2,1)
+        self.pool1 = nn.MaxPool2d(3,2,1)
 
     def forward(self, x):
         """Forward pass for the YOLOv8 mask Proto module."""
-        return torch.cat((x[0], self.pool1(x[1]), self.pool2(x[2])), self.d)
+        return torch.cat((x[0], x[1], self.pool1(x[2])), self.d)
     
 class Nothing(nn.Module):
     """Concatenate a list of tensors along dimension."""
