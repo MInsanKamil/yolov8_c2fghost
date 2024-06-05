@@ -583,7 +583,7 @@ class Conv_Avg_Pooling_Attn(nn.Module):
         self.conv = nn.Conv2d(c1, c2, k, s, autopad(k, p, d), groups=g, dilation=d, bias=False)
         self.bn = nn.BatchNorm2d(c2)
         self.act = self.default_act if act is True else act if isinstance(act, nn.Module) else nn.Identity()
-        self.avg_pool = nn.AvgPool2d(3, stride=2, padding=1)  # GAP layer
+        self.avg_pool = nn.AvgPool2d(3, stride=2)  # GAP layer
         self.ca = ChannelAttention(c1)
         self.sa = SpatialAttention()
 
@@ -776,7 +776,7 @@ class DS_Conv(nn.Module):
     default_act = nn.SiLU()
     def __init__(self, c1, c2, k=1, s=1, d=1, act=True, bias=False):
         super(DS_Conv, self).__init__()
-        self.depthwise = nn.Conv2d(c1, c2, k, s,padding=autopad(k, 1, d), groups=math.gcd(c1, c2), dilation=d, bias=False)
+        self.depthwise = nn.Conv2d(c1, c2, k, s,padding=autopad(k, 1, d), groups=c2, dilation=d, bias=False)
         self.pointwise = nn.Conv2d(c2, c2, kernel_size=1, bias=bias)
         self.bn = nn.BatchNorm2d(c2)
         self.act = self.default_act if act is True else act if isinstance(act, nn.Module) else nn.Identity()
