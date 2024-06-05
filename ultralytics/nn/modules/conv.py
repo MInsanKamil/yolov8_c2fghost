@@ -15,6 +15,7 @@ __all__ = (
     "Conv2",
     "Nothing",
     "GhostConv_Attn",
+    "Conv_Down_Up",
     "GhostConv_Without_BN_Act",
     "GhostConv_Attn_Avg_Pool",
     "LightConv",
@@ -277,6 +278,28 @@ class Conv(nn.Module):
     def forward_fuse(self, x):
         """Perform transposed convolution of 2D data."""
         return self.act(self.conv(x))
+    
+class Conv_Down_Up(nn.Module):
+    """Standard convolution with args(ch_in, ch_out, kernel, stride, padding, groups, dilation, activation)."""
+
+    default_act = nn.SiLU()  # default activation
+
+    def __init__(self, c1, c2, k=1, s=1, p=None, g=1, d=1, act=True):
+        """Initialize Conv layer with given arguments including activation."""
+        super().__init__()
+        self.a = nn.AvgPool2d(kernel_size=2, stride=2)
+        self.conv = nn.Conv2d(c1, c2, k, s, autopad(k, p, d), groups=g, dilation=d, bias=False)
+        self.bn = nn.BatchNorm2d(c2)
+        self.act = self.default_act if act is True else act if isinstance(act, nn.Module) else nn.Identity()
+        self.u = nn.Upsample(scale_factor=2, mode='nearest')
+
+    def forward(self, x):
+        """Apply convolution, batch normalization and activation to input tensor."""
+        return self.u(self.act(self.bn(self.conv(self.a(x)))))
+
+    def forward_fuse(self, x):
+        """Perform transposed convolution of 2D data."""
+        return self.u(self.act(self.conv(self.a(x))))
 
 class GhostConv(nn.Module):
     """Ghost Convolution https://github.com/huawei-noah/ghostnet."""
