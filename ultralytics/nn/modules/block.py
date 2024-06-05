@@ -6,7 +6,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 import torchvision
 
-from .conv import Conv,Conv_Attn,DS_Conv, Conv_Down_Up,DWConv, GhostConv, LightConv, RepConv, autopad, Conv_Max_Pooling, Conv_SP, Conv_Prune
+from .conv import Conv,Conv_Attn,DS_Conv,GhostConv_Modification, Conv_Down_Up,DWConv, GhostConv, LightConv, RepConv, autopad, Conv_Max_Pooling, Conv_SP, Conv_Prune
 from .transformer import TransformerBlock
 
 __all__ = (
@@ -949,9 +949,9 @@ class GhostBottleneck(nn.Module):
         super().__init__()
         c_ = c2 // 2
         self.conv = nn.Sequential(
-            GhostConv(c1, c_, 1, 1),  # pw
+            GhostConv_Modification(c1, c_, 1, 1),  # pw
             DWConv(c_, c_, k, s, act=False) if s == 2 else nn.Identity(),  # dw
-            GhostConv(c_, c2, 1, 1, act=False),  # pw-linear
+            GhostConv_Modification(c_, c2, 1, 1, act=False),  # pw-linear
         )
         self.shortcut = (
             nn.Sequential(DWConv(c1, c1, k, s, act=False), Conv(c1, c2, 1, 1, act=False)) if s == 2 else nn.Identity()
