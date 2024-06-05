@@ -6,7 +6,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 import torchvision
 
-from .conv import Conv,Conv_Attn,DS_Conv, DWConv, GhostConv, LightConv, RepConv, autopad, Conv_Max_Pooling, Conv_SP, Conv_Prune
+from .conv import Conv,Conv_Attn,DS_Conv, Conv_Down_Up,DWConv, GhostConv, LightConv, RepConv, autopad, Conv_Max_Pooling, Conv_SP, Conv_Prune
 from .transformer import TransformerBlock
 
 __all__ = (
