@@ -759,20 +759,17 @@ class DS_Conv_Attn(nn.Module):
         self.pointwise = nn.Conv2d(c2, c2, kernel_size=1, bias=False)
         self.bn = nn.BatchNorm2d(c2)
         self.act = self.default_act if act is True else act if isinstance(act, nn.Module) else nn.Identity()
-        self.ca = ChannelAttention(c1)
-        self.sa = SpatialAttention()
+        self.cbam = CBAM(c2)
 
     def forward(self, x):
-        x = self.ca(x)
         x = self.act(self.bn(self.pointwise(self.depthwise(x))))
-        x = self.sa(x)
+        x = self.cbam(x)
         return x
     
     def forward_fuse(self, x):
         """Perform transposed convolution of 2D data."""
-        x = self.ca(x)
         x = self.act(self.pointwise(self.depthwise(x)))
-        x = self.sa(x)
+        x = self.cbam(x)
         return x
     
 class DS_Conv(nn.Module):
@@ -1382,13 +1379,12 @@ class CBAM_Module(nn.Module):
     def __init__(self, c1, kernel_size=7):
         """Initialize CBAM with given input channel (c1) and kernel size."""
         super().__init__()
-        self.a = nn.AvgPool2d(3,2,1)
         self.channel_attention = ChannelAttention(c1)
         self.spatial_attention = SpatialAttention(kernel_size)
 
     def forward(self, x):
         """Applies the forward pass through C1 module."""
-        return self.spatial_attention(self.channel_attention(self.a(x)))
+        return self.spatial_attention(self.channel_attention(x))
     
 class DoubleAttentionLayer(nn.Module):
     """
