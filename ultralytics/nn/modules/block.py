@@ -555,9 +555,9 @@ class C2f_Ghost_Conv(nn.Module):
         """
         super().__init__()
         self.c = int(c2 * e)  # hidden channels
-        self.cv1 = GhostConv(c1, 2 * self.c, 1, 1)
-        self.cv2 = GhostConv((2 + n) * self.c, c2, 1)  # optional act=FReLU(c2)
-        self.m = nn.ModuleList(Bottleneck(self.c, self.c, shortcut, g, k=((3, 3), (3, 3)), e=1.0) for _ in range(n))
+        self.cv1 = GhostConv_Modification(c1, 2 * self.c, 1, 1)
+        self.cv2 = GhostConv_Modification((2 + n) * self.c, c2, 1)  # optional act=FReLU(c2)
+        self.m = nn.ModuleList(GhostBottleneck_Real(self.c, self.c, shortcut, g, k=((3, 3), (3, 3)), e=1.0) for _ in range(n))
 
     def forward(self, x):
         """Forward pass through C2f layer."""
@@ -1005,8 +1005,8 @@ class GhostBottleneck_Real(nn.Module):
         """
         super().__init__()
         c_ = int(c2 * e)  # hidden channels
-        self.cv1 = GhostConv(c1, c_, k[0], 1)
-        self.cv2 = GhostConv(c_, c2, k[1], 1, g=g)
+        self.cv1 = GhostConv_Modification(c1, c_, k[0], 1)
+        self.cv2 = GhostConv_Modification(c_, c2, k[1], 1, g=g)
         self.add = shortcut and c1 == c2
 
     def forward(self, x):
