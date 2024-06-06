@@ -329,7 +329,7 @@ class GhostConv_Modification(nn.Module):
         super().__init__()
         c_ = c2 // 2  # hidden channels
         self.cv1 = Conv(c1, c_, k, s, None, g, act=act)
-        self.cv2 = Conv(c_, c_, k, s, None, g, act=act)
+        self.cv2 = Conv(c_, c_, k, 2, None, g, act=act)
         self.maxpool = nn.MaxPool2d(2, 2)
         self.us = nn.Upsample(scale_factor=4, mode='nearest')
         
