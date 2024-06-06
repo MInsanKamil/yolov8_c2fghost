@@ -330,14 +330,14 @@ class GhostConv_Modification(nn.Module):
         c_ = c2 // 2  # hidden channels
         self.cv1 = Conv(c1, c_, k, s, None, g, act=act)
         self.cv2 = Conv(c_, c_, k, 2, None, g, act=act)
-        self.maxpool = nn.MaxPool2d(2, 2)
+        self.pool = nn.MaxPool2d(2, 2)
         self.upsample = nn.Upsample(scale_factor=4, mode='nearest')
         
 
     def forward(self, x):
         """Forward propagation through a Ghost Bottleneck layer with skip connection."""
         y = self.cv1(x)
-        return torch.cat((y, self.upsample(self.cv2(self.maxpool(y)))), 1)
+        return torch.cat((y, self.upsample(self.cv2(self.pool(y)))), 1)
     
 class GhostConv_Attn_Avg_Pool(nn.Module):
     """Ghost Convolution https://github.com/huawei-noah/ghostnet."""
