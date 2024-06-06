@@ -1334,11 +1334,11 @@ class ChannelAttention(nn.Module):
 class ChannelAttention_Pool(nn.Module):
     """Channel-attention module https://github.com/open-mmlab/mmdetection/tree/v3.0.0rc1/configs/rtmdet."""
 
-    def __init__(self, channels: int) -> None:
+    def __init__(self, c1, c2 ) -> None:
         """Initializes the class and sets the basic configurations and instance variables required."""
         super().__init__()
         self.pool = nn.AdaptiveAvgPool2d(1)
-        self.fc = nn.Conv2d(channels, channels, 1, 1, 0, bias=True)
+        self.fc = nn.Conv2d(c1, c2, 1, 1, 0, bias=True)
         self.act = nn.Sigmoid()
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
