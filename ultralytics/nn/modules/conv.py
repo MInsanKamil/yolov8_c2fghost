@@ -331,7 +331,7 @@ class GhostConv_Modification(nn.Module):
         self.cv1 = Conv(c1, c_, k, s, None, g, act=act)
         self.cv2 = Conv(c_, c_, k, 2, None, g, act=act)
         self.pool = nn.MaxPool2d(2, 2)
-        self.upsample = nn.Upsample(scale_factor=4, mode='nearest')
+        self.upsample = nn.Upsample(scale_factor=4, mode='bilinear', align_corners=True)
         
 
     def forward(self, x):
