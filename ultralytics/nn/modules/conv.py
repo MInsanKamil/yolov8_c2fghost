@@ -57,6 +57,7 @@ __all__ = (
     "DS_Conv",
     "GhostConv_Modification"
     "ChannelAttention_Pool",
+    "Conv_DownSampleAttn"
 )
 
 def conv_bn(inp, oup, stride):
@@ -596,6 +597,37 @@ class Conv_Avg_Pooling_Attn(nn.Module):
         x = self.act(self.bn(self.conv(x)))
         x = self.avg_pool(x)
         x = self.sa(x)
+        return x
+
+    def forward_fuse(self, x):
+        """Perform transposed convolution of 2D data."""
+        x = self.ca(x)
+        x = self.act(self.conv(x))
+        x = self.avg_pool(x)
+        x = self.sa(x)
+        return x
+
+class Conv_DownSampleAttn(nn.Module):
+    """Standard convolution with args(ch_in, ch_out, kernel, stride, padding, groups, dilation, activation)."""
+
+    default_act = nn.SiLU()  # default activation
+
+    def __init__(self, c1, c2, k=1, s=1, p=None, g=1, d=1, act=True):
+        """Initialize Conv layer with given arguments including activation."""
+        super().__init__()
+        self.conv = nn.Conv2d(c1, c2, k, s, autopad(k, p, d), groups=g, dilation=d, bias=False)
+        self.bn = nn.BatchNorm2d(c2)
+        self.act = self.default_act if act is True else act if isinstance(act, nn.Module) else nn.Identity()
+        self.avg_pool = nn.AvgPool2d(3, stride=2)  # GAP layer
+        self.ca = ChannelAttention(c2)
+        self.sa = SpatialAttention()
+
+    def forward(self, x):
+        """Apply convolution, batch normalization and activation to input tensor."""
+        x = self.act(self.bn(self.conv(x)))
+        x = self.ca(x)
+        x = self.sa(x)
+        x = self.avg_pool(x)
         return x
 
     def forward_fuse(self, x):
