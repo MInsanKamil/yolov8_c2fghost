@@ -632,8 +632,8 @@ class Conv_DownSampleAttn(nn.Module):
 
     def forward_fuse(self, x):
         """Perform transposed convolution of 2D data."""
-        x = self.ca(x)
         x = self.act(self.conv(x))
+        x = self.ca(x)
         x = self.avg_pool(x)
         x = self.sa(x)
         return x
