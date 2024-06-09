@@ -618,16 +618,17 @@ class Conv_DownSampleAttn(nn.Module):
         self.conv = nn.Conv2d(c1, c2, k, s, autopad(k, p, d), groups=g, dilation=d, bias=False)
         self.bn = nn.BatchNorm2d(c2)
         self.act = self.default_act if act is True else act if isinstance(act, nn.Module) else nn.Identity()
-        self.max_pool = nn.MaxPool2d(2, stride=2)  # GAP layer
+        # self.max_pool = nn.MaxPool2d(2, stride=2)  # GAP layer
         self.ca = ChannelAttention(c2)
         self.sa = SpatialAttention()
+        self.conv_stride = nn.Conv2d(c2, c2, 3, 2)
 
     def forward(self, x):
         """Apply convolution, batch normalization and activation to input tensor."""
         x = self.act(self.bn(self.conv(x)))
         x = self.ca(x)
         x = self.sa(x)
-        x = self.max_pool(x)
+        x = self.conv_stride(x)
         return x
 
     def forward_fuse(self, x):
@@ -635,7 +636,7 @@ class Conv_DownSampleAttn(nn.Module):
         x = self.act(self.conv(x))
         x = self.ca(x)
         x = self.sa(x)
-        x = self.max_pool(x)
+        x = self.conv_stride(x)
         return x
     
 class Conv_Avg_Pooling_Attnv2(nn.Module):
