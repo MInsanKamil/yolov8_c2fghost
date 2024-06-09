@@ -634,8 +634,8 @@ class Conv_DownSampleAttn(nn.Module):
         """Perform transposed convolution of 2D data."""
         x = self.act(self.conv(x))
         x = self.ca(x)
-        x = self.avg_pool(x)
         x = self.sa(x)
+        x = self.avg_pool(x)
         return x
     
 class Conv_Avg_Pooling_Attnv2(nn.Module):
