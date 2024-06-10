@@ -46,7 +46,8 @@ class Detect(nn.Module):
         for i in range(self.nl):
             cv2_out = self.cv2[i](x[i])
             cv3_out = self.cv3[i](x[i])
-            cv3_out_upsampled = F.upsample(cv3_out, size=cv2_out.shape[2:], mode='nearest')
+            up = nn.Upsample(size=cv2_out.shape[2:], mode="nearest")
+            cv3_out_upsampled = up(cv3_out)
             x[i] = torch.cat((cv2_out, cv3_out_upsampled), 1)
         if self.training:  # Training path
             return x
