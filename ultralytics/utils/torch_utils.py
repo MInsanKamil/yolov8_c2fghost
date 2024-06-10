@@ -53,7 +53,7 @@ def sparsity(model):
         b += (p == 0).sum()
     return b / a
 
-def prune(model, amount=0.5):
+def prune(model, amount=0.2):
     """Prunes Conv2d layers in a model to a specified sparsity using L1 unstructured pruning."""
     import torch.nn.utils.prune as prune
 

@@ -120,7 +120,7 @@ class BaseValidator:
             # self.model = model
             self.loss = torch.zeros_like(trainer.loss_items, device=trainer.device)
             self.args.plots &= trainer.stopper.possible_stop or (trainer.epoch == trainer.epochs - 1)
-            prune(model, 0.5)
+            prune(model, 0.2)
             model.eval()
         else:
             callbacks.add_integration_callbacks(self)
@@ -155,7 +155,7 @@ class BaseValidator:
                 self.args.rect = False
             self.stride = model.stride  # used in get_dataloader() for padding
             self.dataloader = self.dataloader or self.get_dataloader(self.data.get(self.args.split), self.args.batch)
-            prune(model, 0.5)
+            prune(model, 0.2)
             model.eval()
             model.warmup(imgsz=(1 if pt else self.args.batch, 3, imgsz, imgsz))  # warmup
 
