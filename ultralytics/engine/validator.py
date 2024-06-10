@@ -123,7 +123,6 @@ class BaseValidator:
             self.args.plots &= trainer.stopper.possible_stop or (trainer.epoch == trainer.epochs - 1)
             prune(model, 0.2)
             model.eval()
-            model_info(model)
         else:
             callbacks.add_integration_callbacks(self)
             model = AutoBackend(
@@ -160,7 +159,7 @@ class BaseValidator:
             prune(model, 0.2)
             model.eval()
             model.warmup(imgsz=(1 if pt else self.args.batch, 3, imgsz, imgsz))  # warmup
-            model_info(model)
+            
 
         self.run_callbacks("on_val_start")
         dt = (
@@ -209,6 +208,7 @@ class BaseValidator:
             results = {**stats, **trainer.label_loss_items(self.loss.cpu() / len(self.dataloader), prefix="val")}
             return {k: round(float(v), 5) for k, v in results.items()}  # return results as 5 decimal place floats
         else:
+            model_info(model)
             LOGGER.info(
                 "Speed: %.1fms preprocess, %.1fms inference, %.1fms loss, %.1fms postprocess per image"
                 % tuple(self.speed.values())
