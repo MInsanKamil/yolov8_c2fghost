@@ -35,6 +35,7 @@ from ultralytics.utils.checks import check_imgsz
 from ultralytics.utils.ops import Profile
 from ultralytics.utils.torch_utils import de_parallel, select_device, smart_inference_mode
 from ultralytics.utils.torch_utils import prune
+from ultralytics.utils.torch_utils import model_info
 
 
 class BaseValidator:
@@ -120,8 +121,9 @@ class BaseValidator:
             # self.model = model
             self.loss = torch.zeros_like(trainer.loss_items, device=trainer.device)
             self.args.plots &= trainer.stopper.possible_stop or (trainer.epoch == trainer.epochs - 1)
-            prune(model, 0.2)
+            prune(model, 0.05)
             model.eval()
+            model_info(model)
         else:
             callbacks.add_integration_callbacks(self)
             model = AutoBackend(
@@ -155,9 +157,10 @@ class BaseValidator:
                 self.args.rect = False
             self.stride = model.stride  # used in get_dataloader() for padding
             self.dataloader = self.dataloader or self.get_dataloader(self.data.get(self.args.split), self.args.batch)
-            prune(model, 0.2)
+            prune(model, 0.05)
             model.eval()
             model.warmup(imgsz=(1 if pt else self.args.batch, 3, imgsz, imgsz))  # warmup
+            model_info(model)
 
         self.run_callbacks("on_val_start")
         dt = (
