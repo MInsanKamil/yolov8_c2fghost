@@ -43,6 +43,25 @@ def torch_distributed_zero_first(local_rank: int):
     if initialized and local_rank == 0:
         dist.barrier(device_ids=[0])
 
+def sparsity(model):
+    """Calculates and returns the global sparsity of a model as the ratio of zero-valued parameters to total
+    parameters.
+    """
+    a, b = 0, 0
+    for p in model.parameters():
+        a += p.numel()
+        b += (p == 0).sum()
+    return b / a
+
+def prune(model, amount=0.5):
+    """Prunes Conv2d layers in a model to a specified sparsity using L1 unstructured pruning."""
+    import torch.nn.utils.prune as prune
+
+    for name, m in model.named_modules():
+        if isinstance(m, nn.Conv2d):
+            prune.l1_unstructured(m, name="weight", amount=amount)  # prune
+            prune.remove(m, "weight")  # make permanent
+    LOGGER.info(f"Model pruned to {sparsity(model):.3g} global sparsity")
 
 def smart_inference_mode():
     """Applies torch.inference_mode() decorator if torch>=1.9.0 else torch.no_grad() decorator."""
