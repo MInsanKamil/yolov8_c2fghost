@@ -6,7 +6,7 @@ import math
 import torch
 import torch.nn as nn
 from torch.nn.init import constant_, xavier_uniform_
-
+import torch.nn.functional as F
 from ultralytics.utils.tal import TORCH_1_10, dist2bbox, dist2rbox, make_anchors
 from .block import DFL, Proto, ContrastiveHead, BNContrastiveHead
 from .conv import Conv, Conv_Attn, GhostConv, Conv_Avg_Pooling_Attn, DS_Conv, GhostConv_Modification
@@ -39,12 +39,15 @@ class Detect(nn.Module):
         )
         self.cv3 = nn.ModuleList(nn.Sequential(Conv(x, c3, 3, 2), Conv(c3, c3, 3), nn.Conv2d(c3, self.nc, 1)) for x in ch)
         self.dfl = DFL(self.reg_max) if self.reg_max > 1 else nn.Identity()
-        self.up = nn.Upsample(scale_factor=2, mode="bilinear")
+        # self.up = nn.Upsample(scale_factor=2, mode="nearest")
 
     def forward(self, x):
         """Concatenates and returns predicted bounding boxes and class probabilities."""
         for i in range(self.nl):
-            x[i] = torch.cat((self.cv2[i](x[i]), self.up(self.cv3[i](x[i]))), 1)
+            cv2_out = self.cv2[i](x[i])
+            cv3_out = self.cv3[i](x[i])
+            cv3_out_upsampled = F.interpolate(cv3_out, size=cv2_out.shape[2:], mode='nearest')
+            x[i] = torch.cat((cv2_out, cv3_out_upsampled), 1)
         if self.training:  # Training path
             return x
 
