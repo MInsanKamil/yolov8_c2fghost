@@ -329,7 +329,7 @@ class GhostConv_Modification(nn.Module):
         """
         super().__init__()
         c_ = c2 // 2  # hidden channels
-        self.cv1 = Conv(c1, c_, k, s, None, c_, act=act)
+        self.cv1 = Conv(c1, c_, k, s, None, math.gcd(c1,c_), act=act)
         self.cv2 = Conv(c_, c_, 3, 1, None, g, act=act)
 
     def forward(self, x):
