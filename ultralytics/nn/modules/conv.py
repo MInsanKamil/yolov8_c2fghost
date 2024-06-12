@@ -308,9 +308,6 @@ class sliceSamp_Conv(nn.Module):
         
         # Apply convolution, batch normalization, and activation
         out = self.conv(x_cat)
-        out = self.bn(out)
-        out = self.act(out)
-        out = out
         
         # Slice the output tensor back into 4 parts
         # out_h, out_w = out.shape[1:]
@@ -320,8 +317,10 @@ class sliceSamp_Conv(nn.Module):
         out1 = torch.cat([out_slices[0], out_slices[2]], dim=1)
         out2 = torch.cat([out_slices[1], out_slices[3]], dim=1)
         out_combined = torch.cat([out1, out2], dim=2)
+        out = self.bn(out_combined)
+        out = self.act(out)
         
-        return out_combined    
+        return out    
 class Conv_Down_Up(nn.Module):
     """Standard convolution with args(ch_in, ch_out, kernel, stride, padding, groups, dilation, activation)."""
 
