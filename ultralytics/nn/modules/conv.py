@@ -308,9 +308,9 @@ class sliceSamp_Conv(nn.Module):
         
         # Apply convolution, batch normalization, and activation
         out = self.conv(x_cat)
-        out = self.bn(out.unsqueeze(0))
+        out = self.bn(out)
         out = self.act(out)
-        out = out.squeeze(0)
+        out = out
         
         # Slice the output tensor back into 4 parts
         # out_h, out_w = out.shape[1:]
