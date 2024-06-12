@@ -10,6 +10,8 @@ from torch.autograd import Variable
 import torch.nn.functional as F
 import torch.nn.utils.prune as prune
 
+from ultralytics.utils import LOGGER
+
 __all__ = (
     "Conv",
     "Conv2",
@@ -57,7 +59,8 @@ __all__ = (
     "DS_Conv",
     "GhostConv_Modification"
     "ChannelAttention_Pool",
-    "Conv_DownSampleAttn"
+    "Conv_DownSampleAttn",
+    "sliceSamp_Conv"
 )
 
 def conv_bn(inp, oup, stride):
@@ -209,7 +212,7 @@ class sliceSamp(nn.Module):
     default_act = nn.GELU()
     def __init__(self, nin, nout, kernel_size = 3, padding = 1, bias=False, act=True):
         super(sliceSamp, self).__init__()
-        self.depthwise = nn.Conv2d(nin, nin, kernel_size=kernel_size, padding=padding, groups=nout, bias=bias)
+        self.depthwise = nn.Conv2d(nin, nin, kernel_size=kernel_size, padding=padding, groups=nin, bias=bias)
         self.pointwise = nn.Conv2d(nin, nout, kernel_size=1, bias=bias)
         self.bn = nn.BatchNorm2d(nout)
         self.act = self.default_act if act is True else act if isinstance(act, nn.Module) else nn.Identity()
@@ -279,7 +282,46 @@ class Conv(nn.Module):
     def forward_fuse(self, x):
         """Perform transposed convolution of 2D data."""
         return self.act(self.conv(x))
-    
+
+class sliceSamp_Conv(nn.Module):
+    default_act = nn.SiLU()  # default activation
+
+    def __init__(self, c1, c2, k=1, s=1, p=None, g=1, d=1, act=True):
+        """Initialize Conv layer with given arguments including activation."""
+        super().__init__()
+        self.conv = nn.Conv2d(c1, c2, k, s, autopad(k, p, d), groups=g, dilation=d, bias=False)
+        self.bn = nn.BatchNorm2d(c2)
+        self.act = self.default_act if act is True else act if isinstance(act, nn.Module) else nn.Identity()
+
+    def forward(self, x):
+        h,w = x.size()[2:]
+        LOGGER.info(f"h={h} w={w}")
+        # Slice the input tensor into 4 parts
+        x_slice = []
+        x_slice.append(x[:,:h//2,:w//2])
+        x_slice.append(x[:,:h//2,w//2:w])
+        x_slice.append(x[:,h//2:,:w//2])
+        x_slice.append(x[:,h//2:,w//2:w])
+        
+        # Concatenate along the channel dimension
+        x_cat = torch.cat(x_slice, 1)
+        
+        # Apply convolution, batch normalization, and activation
+        out = self.conv(x_cat)
+        out = self.bn(out.unsqueeze(0))
+        out = self.act(out)
+        out = out.squeeze(0)
+        
+        # Slice the output tensor back into 4 parts
+        # out_h, out_w = out.shape[1:]
+        out_slices = torch.chunk(out, 4, dim=1)
+        
+        # Combine the slices to form the original spatial dimensions
+        out1 = torch.cat([out_slices[0], out_slices[2]], dim=1)
+        out2 = torch.cat([out_slices[1], out_slices[3]], dim=1)
+        out_combined = torch.cat([out1, out2], dim=2)
+        
+        return out_combined    
 class Conv_Down_Up(nn.Module):
     """Standard convolution with args(ch_in, ch_out, kernel, stride, padding, groups, dilation, activation)."""
 
