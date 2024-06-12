@@ -289,7 +289,9 @@ class sliceSamp_Conv(nn.Module):
     def __init__(self, c1, c2, k=1, s=1, p=None, g=1, d=1, act=True):
         """Initialize Conv layer with given arguments including activation."""
         super().__init__()
-        self.conv = nn.Conv2d(c1 * 2, c2, k, s, autopad(k, p, d), groups=g, dilation=d, bias=False)
+        self.dc = nn.Conv2d(c1, c1, kernel_size=3, stride=s, groups=c1, bias=False)
+        self.bn_dc = nn.BatchNorm2d(c1)
+        self.conv = nn.Conv2d(c1, c2, k, 1, autopad(k, p, d), groups=g, dilation=d, bias=False)
         self.bn = nn.BatchNorm2d(c2)
         self.act = self.default_act if act is True else act if isinstance(act, nn.Module) else nn.Identity()
 
@@ -306,7 +308,8 @@ class sliceSamp_Conv(nn.Module):
         x_cat = torch.cat(x_slice, 1)
         
         # Apply convolution, batch normalization, and activation
-        out = self.conv(x_cat)
+        out = self.dc(x_cat)
+        out = self.bn_dc(out)
         
         # Slice the output tensor back into 4 parts
         # out_h, out_w = out.shape[1:]
@@ -316,7 +319,8 @@ class sliceSamp_Conv(nn.Module):
         out1 = torch.cat([out_slices[0], out_slices[2]], dim=1)
         out2 = torch.cat([out_slices[1], out_slices[3]], dim=1)
         out_combined = torch.cat([out1, out2], dim=2)
-        out = self.bn(out_combined)
+        out = self.conv(out_combined)
+        out = self.bn(out)
         out = self.act(out)
         
         return out    
