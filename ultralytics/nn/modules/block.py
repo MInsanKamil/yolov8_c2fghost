@@ -179,7 +179,6 @@ class SPP(nn.Module):
         x = self.cv1(x)
         return self.cv2(torch.cat([x] + [m(x) for m in self.m], 1))
 
-
 class SPPF(nn.Module):
     """Spatial Pyramid Pooling - Fast (SPPF) layer for YOLOv5 by Glenn Jocher."""
 
@@ -257,8 +256,8 @@ class SPPF_Ghost(nn.Module):
         """
         super().__init__()
         c_ = c1 // 2  # hidden channels
-        self.cv1 = GhostConv(c1, c_, 1, 1)
-        self.cv2 = GhostConv(c_ * 4, c2, 1, 1)
+        self.cv1 = GhostConv_Modification(c1, c_, 1, 1)
+        self.cv2 = GhostConv_Modification(c_ * 4, c2, 1, 1)
         self.m = nn.MaxPool2d(kernel_size=k, stride=1, padding=k // 2)
 
     def forward(self, x):
