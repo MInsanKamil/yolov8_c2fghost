@@ -369,8 +369,8 @@ class GhostConv_Modification(nn.Module):
         """
         super().__init__()
         c_ = c2 // 2  # hidden channels
-        self.cv1 = Conv(c1, c_, 7, s, None, math.gcd(c1,c_), act=act)
-        self.cv2 = Conv(c_, c_, k, 1, None, g, act=act)
+        self.cv1 = Conv(c1, c_, 7, 1, None, math.gcd(c1,c_), act=act)
+        self.cv2 = Conv(c_, c_, k, s, None, g, act=act)
 
     def forward(self, x):
         """Forward propagation through a Ghost Bottleneck layer with skip connection."""
