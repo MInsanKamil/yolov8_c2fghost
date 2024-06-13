@@ -553,8 +553,7 @@ class Conv_Avg_Pooling(nn.Module):
 
     def forward(self, x):
         """Apply convolution, batch normalization and activation to input tensor."""
-        x = self.act(self.bn(self.conv(x)))
-        x = self.avg_pool(x)
+        x = self.act(self.bn(self.conv(self.avg_pool(x))))
         return x
 
     def forward_fuse(self, x):
@@ -847,7 +846,7 @@ class DS_Conv(nn.Module):
     def __init__(self, c1, c2, k=1, s=1, p=None, g=1, d=1, act=True):
         super(DS_Conv, self).__init__()
         self.depthwise = nn.Conv2d(c1, c2, k, s,padding=autopad(k, p, d), groups=math.gcd(c1, c2), dilation=d, bias=False)
-        self.pointwise = nn.Conv2d(c2, c2, kernel_size=3, bias=False)
+        self.pointwise = nn.Conv2d(c2, c2, kernel_size=1, bias=False)
         self.bn = nn.BatchNorm2d(c2)
         self.act = self.default_act if act is True else act if isinstance(act, nn.Module) else nn.Identity()
     def forward(self, x):
