@@ -500,20 +500,19 @@ class Conv_Max_Pooling_Dropout(nn.Module):
         self.bn = nn.BatchNorm2d(c2)
         self.act = self.default_act if act is True else act if isinstance(act, nn.Module) else nn.Identity()
         self.max_pool = nn.MaxPool2d(3, stride=2)  # GAP layer
-        self.dropout = nn.Dropout(0.2)
         
     def forward(self, x):
         """Apply convolution, batch normalization and activation to input tensor."""
         x = self.conv(x)
         x = self.act(self.bn(x))
-        x = self.max_pool(self.dropout(x))
+        x = self.max_pool(x)
         return x
 
     def forward_fuse(self, x):
         """Perform transposed convolution of 2D data."""
         x = self.conv(x)
         x = self.act(x)
-        x = self.max_pool(self.dropout(x))
+        x = self.max_pool(x)
         return x
 
 class Conv_Max_Pooling_Dropout_Attn(nn.Module):
