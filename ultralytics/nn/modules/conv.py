@@ -61,7 +61,8 @@ __all__ = (
     "GhostConv_Modification"
     "ChannelAttention_Pool",
     "Conv_DownSampleAttn",
-    "sliceSamp_Conv"
+    "sliceSamp_Conv",
+    "Conv_Weighted_Pooling"
 )
 
 def conv_bn(inp, oup, stride):
@@ -514,6 +515,36 @@ class Conv_Max_Pooling_Dropout(nn.Module):
         """Perform transposed convolution of 2D data."""
         x = self.drop(x)
         x = self.max_pool(x)
+        x = self.conv(x)
+        x = self.act(x)
+        return x
+    
+class Conv_Weighted_Pooling(nn.Module):
+    """Standard convolution with args(ch_in, ch_out, kernel, stride, padding, groups, dilation, activation)."""
+
+    default_act = nn.SiLU()  # default activation
+
+    def __init__(self, c1, c2, k=1, s=1, p=None, g=1, d=1, act=True):
+        """Initialize Conv layer with given arguments including activation."""
+        super().__init__()
+        self.conv = nn.Conv2d(c1, c2, k, s, autopad(k, p, d), groups=g, dilation=d, bias=False)
+        self.bn = nn.BatchNorm2d(c2)
+        self.act = self.default_act if act is True else act if isinstance(act, nn.Module) else nn.Identity()
+        self.drop = nn.Dropout(0.5)
+        self.sum_pool = nn.AvgPool2d(3, stride=2, divisor_override=1) # GAP layer
+        
+    def forward(self, x):
+        """Apply convolution, batch normalization and activation to input tensor."""
+        x = self.drop(x)
+        x = self.sum_pool(x)
+        x = self.conv(x)
+        x = self.act(self.bn(x))
+        return x
+
+    def forward_fuse(self, x):
+        """Perform transposed convolution of 2D data."""
+        x = self.drop(x)
+        x = self.sum_pool(x)
         x = self.conv(x)
         x = self.act(x)
         return x
