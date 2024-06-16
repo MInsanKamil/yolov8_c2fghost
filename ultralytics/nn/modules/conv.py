@@ -364,13 +364,13 @@ class GhostConv(nn.Module):
 class GhostConv_Modification(nn.Module):
     """Ghost Convolution https://github.com/huawei-noah/ghostnet."""
 
-    def __init__(self, c1, c2, k=1, s=1, g=1, act=True):
+    def __init__(self, c1, c2, k=1, s=1, k1=7, g=1, act=True):
         """Initializes the GhostConv object with input channels, output channels, kernel size, stride, groups and
         activation.
         """
         super().__init__()
         c_ = c2 // 2  # hidden channels
-        self.cv1 = Conv(c1, c_, 7, s, None, math.gcd(c1,c_), act=act)
+        self.cv1 = Conv(c1, c_, k1, s, None, math.gcd(c1,c_), act=act)
         self.cv2 = Conv(c_, c_, k, 1, None, g, act=act)
 
     def forward(self, x):
