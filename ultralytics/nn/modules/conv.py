@@ -1554,7 +1554,7 @@ class Concat_Feature_Map(nn.Module):
         super().__init__()
         self.d = dimension
         self.drop = nn.Dropout(0.2)
-        self.pool1 = nn.MaxPool2d(3,2)
+        self.pool1 = nn.MaxPool2d(3,2,1)
 
     def forward(self, x):
         """Forward pass for the YOLOv8 mask Proto module."""
