@@ -499,7 +499,7 @@ class Conv_Max_Pooling_Dropout(nn.Module):
         self.conv = nn.Conv2d(c1, c2, k, s, autopad(k, p, d), groups=g, dilation=d, bias=False)
         self.bn = nn.BatchNorm2d(c2)
         self.act = self.default_act if act is True else act if isinstance(act, nn.Module) else nn.Identity()
-        self.drop = nn.Dropout(0.25)
+        self.drop = nn.Dropout(0.2)
         self.max_pool = nn.MaxPool2d(3, stride=2)  # GAP layer
         
     def forward(self, x):
