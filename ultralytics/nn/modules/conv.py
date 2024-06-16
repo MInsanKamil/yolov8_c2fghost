@@ -530,7 +530,7 @@ class Conv_Weighted_Pooling(nn.Module):
         self.conv = nn.Conv2d(c1, c2, k, s, autopad(k, p, d), groups=g, dilation=d, bias=False)
         self.bn = nn.BatchNorm2d(c2)
         self.act = self.default_act if act is True else act if isinstance(act, nn.Module) else nn.Identity()
-        self.drop = nn.Dropout(0.5)
+        self.drop = nn.Dropout(0.3)
         self.sum_pool = nn.AvgPool2d(3, stride=2, divisor_override=1) # GAP layer
         
     def forward(self, x):
