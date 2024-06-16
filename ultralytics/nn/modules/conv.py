@@ -499,20 +499,23 @@ class Conv_Max_Pooling_Dropout(nn.Module):
         self.conv = nn.Conv2d(c1, c2, k, s, autopad(k, p, d), groups=g, dilation=d, bias=False)
         self.bn = nn.BatchNorm2d(c2)
         self.act = self.default_act if act is True else act if isinstance(act, nn.Module) else nn.Identity()
+        self.drop = nn.Dropout(0.2)
         self.max_pool = nn.MaxPool2d(3, stride=2)  # GAP layer
         
     def forward(self, x):
         """Apply convolution, batch normalization and activation to input tensor."""
+        x = self.drop(x)
+        x = self.max_pool(x)
         x = self.conv(x)
         x = self.act(self.bn(x))
-        x = self.max_pool(x)
         return x
 
     def forward_fuse(self, x):
         """Perform transposed convolution of 2D data."""
+        x = self.drop(x)
+        x = self.max_pool(x)
         x = self.conv(x)
         x = self.act(x)
-        x = self.max_pool(x)
         return x
 
 class Conv_Max_Pooling_Dropout_Attn(nn.Module):
@@ -1550,11 +1553,12 @@ class Concat_Feature_Map(nn.Module):
         """Concatenates a list of tensors along a specified dimension."""
         super().__init__()
         self.d = dimension
-        self.pool1 = nn.MaxPool2d(2,2)
+        self.drop = nn.Dropout(0.2)
+        self.pool1 = nn.MaxPool2d(3,2)
 
     def forward(self, x):
         """Forward pass for the YOLOv8 mask Proto module."""
-        return torch.cat((x[0], self.pool1(x[1])), self.d)
+        return torch.cat((x[0], self.pool1(self.drop(x[1]))), self.d)
     
 class Nothing(nn.Module):
     """Concatenate a list of tensors along dimension."""
