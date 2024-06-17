@@ -501,7 +501,7 @@ class Conv_Max_Pooling_Dropout(nn.Module):
         self.bn = nn.BatchNorm2d(c2)
         self.act = self.default_act if act is True else act if isinstance(act, nn.Module) else nn.Identity()
         self.max_pool = nn.MaxPool2d(3, stride=2)  # GAP layer
-        # self.dropout = nn.Dropout(0.2, inplace=True)
+        self.dropout = nn.Dropout(0.5)
         # self.sa= SpatialAttention()
         # self.ca= ChannelAttention(c1)
         
@@ -533,7 +533,7 @@ class Conv_Weighted_Pooling(nn.Module):
         self.bn = nn.BatchNorm2d(c2)
         self.act = self.default_act if act is True else act if isinstance(act, nn.Module) else nn.Identity()
         self.drop = nn.Dropout(0.3)
-        self.sum_pool = nn.AvgPool2d(2, stride=2, divisor_override=1) # GAP layer
+        self.sum_pool = nn.AvgPool2d(2, stride=1, divisor_override=1) # GAP layer
         
     def forward(self, x):
         """Apply convolution, batch normalization and activation to input tensor."""
