@@ -1660,8 +1660,8 @@ class Concat_Feature_Map(nn.Module):
     def forward(self, x):
         """Forward pass for the YOLOv8 mask Proto module."""
         if x[0].shape[2:] != x[1].shape[2:]:
-            fractional_pool = nn.FractionalMaxPool2d(3, output_size=x[1].shape[2:])
-            x0 = fractional_pool(x[0])
+            pool = nn.AdaptiveAvgPool2d(output_size=x[1].shape[2:])
+            x0 = pool(x[0])
         else:
             x0 = x[0]
         return torch.cat((x0, x[1]), self.d)
