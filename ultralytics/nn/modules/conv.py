@@ -513,6 +513,7 @@ class Conv_Max_Pooling_Dropout(nn.Module):
         # x = self.ca(x)
         if self.training:   
             x = self.act(self.bn(self.conv(self.max_pool(self.dropout(x)))))
+            LOGGER.info("efisien strategy successfully!")
         else:
             x = self.act(self.bn(self.conv(self.max_pool2(x))))
         # x = self.sa(x)
