@@ -1612,8 +1612,7 @@ class Concat_Feature_Map(nn.Module):
     def forward(self, x):
         """Forward pass for the YOLOv8 mask Proto module."""
         if x[0].shape[2:] != x[1].shape[2:]:
-            up = nn.Upsample(size=x[0].shape[2:], mode="nearest")
-            x1 = up(x[1])
+            x1 = nn.functional.interpolate(x[1],size=x[0].shape[2:], mode="nearest")
         else:
             x1 = x[1]
         return torch.cat((x[0], x1), self.d)
