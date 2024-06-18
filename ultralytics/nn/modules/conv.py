@@ -1671,10 +1671,12 @@ class Concat_Feature_Map(nn.Module):
                 # Pad x[1] to match x[0]
                 pad = [0, shape0[1] - shape1[1], 0, shape0[0] - shape1[0]]
                 x1 = nn.functional.pad(x[1], pad)
+                x0 = x[0]
             else:
                 # Pad x[0] to match x[1]
                 pad = [0, shape1[1] - shape0[1], 0, shape1[0] - shape0[0]]
                 x0 = nn.functional.pad(x[0], pad)
+                x1 = x[1]
         else:
             x0 = x[0]
             x1 = x[1]
