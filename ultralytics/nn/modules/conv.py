@@ -1656,15 +1656,30 @@ class Concat_Feature_Map(nn.Module):
         super().__init__()
         self.d = dimension
         
-
     def forward(self, x):
         """Forward pass for the YOLOv8 mask Proto module."""
+        # # Ensure x is a list of two tensors
+        # assert len(x) == 2, "Input must be a list of two tensors."
+        
+        # Check if the sizes are off by one pixel
         if x[0].shape[2:] != x[1].shape[2:]:
-            pool = nn.AdaptiveAvgPool2d(output_size=x[0].shape[2:])
-            x1 = pool(x[1])
+            shape0 = x[0].shape[2:]
+            shape1 = x[1].shape[2:]
+            
+            # Determine if x[1] is smaller than x[0] in any spatial dimension
+            if any([shape1[i] < shape0[i] for i in range(len(shape0))]):
+                # Pad x[1] to match x[0]
+                pad = [0, shape0[1] - shape1[1], 0, shape0[0] - shape1[0]]
+                x1 = nn.functional.pad(x[1], pad)
+            else:
+                # Pad x[0] to match x[1]
+                pad = [0, shape1[1] - shape0[1], 0, shape1[0] - shape0[0]]
+                x0 = nn.functional.pad(x[0], pad)
         else:
+            x0 = x[0]
             x1 = x[1]
-        return torch.cat((x[0], x1), self.d)
+        
+        return torch.cat((x0, x1), self.d)
     
 class Nothing(nn.Module):
     """Concatenate a list of tensors along dimension."""
