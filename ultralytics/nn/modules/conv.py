@@ -1666,16 +1666,14 @@ class Concat_Feature_Map(nn.Module):
             shape0 = x[0].shape[2:]
             shape1 = x[1].shape[2:]
             
-            # Determine if x[1] is smaller than x[0] in any spatial dimension
-            if any([shape1[i] < shape0[i] for i in range(len(shape0))]):
-                # Pad x[1] to match x[0]
-                pad = [0, shape0[1] - shape1[1], 0, shape0[0] - shape1[0]]
-                x1 = nn.functional.pad(x[1], pad)
+            # Determine if x[1] is larger than x[0] in any spatial dimension
+            if any([shape1[i] > shape0[i] for i in range(len(shape0))]):
+                # Crop x[1] to match x[0]
+                x1 = x[1][:,:shape0[0], :shape0[1]]
                 x0 = x[0]
             else:
-                # Pad x[0] to match x[1]
-                pad = [0, shape1[1] - shape0[1], 0, shape1[0] - shape0[0]]
-                x0 = nn.functional.pad(x[0], pad)
+                # Crop x[0] to match x[1]
+                x0 = x[0][:,:shape1[0], :shape1[1]]
                 x1 = x[1]
         else:
             x0 = x[0]
