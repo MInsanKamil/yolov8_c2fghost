@@ -9,8 +9,8 @@ width_multiple: 0.25  # scales convolution channels
 # YOLOv8.0n backbone
 backbone:
   # [from, repeats, module, args]
-  - [-1, 1, Conv_Avg_Pooling, [64, 3, 2]] # 0-P1/2
-  - [-1, 1, Conv, [128, 3, 2]] # 1-P2/4
+  - [-1, 1, Conv_Max_Pooling_Dropout, [64, 3, 2]] # 0-P1/2
+  - [-1, 1, Conv_Max_Pooling, [128, 3, 2]] # 1-P2/4
   - [-1, 3, C2f, [128, True]]
   - [-1, 1, Conv, [256, 3, 2]] # 3-P3/8
   - [-1, 6, C2f, [256, True]]
@@ -22,11 +22,11 @@ backbone:
 
 # YOLOv8.0n head
 head:
-  - [-1, 1, nn.Upsample, [None, 2, "bilinear", "True"]]
+  - [-1, 1, nn.Upsample, [None, 2, "nearest"]]
   - [[-1, 6], 1, Concat, [1]] # cat backbone P4
   - [-1, 3, C2f, [512]] # 12
 
-  - [-1, 1, nn.Upsample, [None, 2, "bilinear", "True"]]
+  - [-1, 1, nn.Upsample, [None, 2, "nearest"]]
   - [[-1, 4], 1, Concat, [1]] # cat backbone P3
   - [-1, 3, C2f, [256]] # 15 (P3/8-small)
 
