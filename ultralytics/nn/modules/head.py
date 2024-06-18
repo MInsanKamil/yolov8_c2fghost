@@ -44,8 +44,8 @@ class Detect(nn.Module):
 
     def forward(self, x):
         """Concatenates and returns predicted bounding boxes and class probabilities."""
-        x=self.attn(x)
         for i in range(self.nl):
+            x[i] = self.attn(x[i])
             cv2_out = self.cv2[i](x[i])
             cv3_out = self.cv3[i](x[i])
             x[i] = torch.cat((cv2_out, cv3_out), 1)
