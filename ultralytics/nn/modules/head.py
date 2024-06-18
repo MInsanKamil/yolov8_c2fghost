@@ -9,7 +9,7 @@ from torch.nn.init import constant_, xavier_uniform_
 import torch.nn.functional as F
 from ultralytics.utils.tal import TORCH_1_10, dist2bbox, dist2rbox, make_anchors
 from .block import DFL, Proto, ContrastiveHead, BNContrastiveHead
-from .conv import Conv, Conv_Attn, GhostConv, Conv_Avg_Pooling_Attn, DS_Conv, GhostConv_Modification
+from .conv import Conv, Conv_Attn, GhostConv, Conv_Avg_Pooling_Attn, DS_Conv, GhostConv_Modification, CBAM
 from .transformer import MLP, DeformableTransformerDecoder, DeformableTransformerDecoderLayer
 from .utils import bias_init_with_prob, linear_init
 
@@ -39,10 +39,12 @@ class Detect(nn.Module):
         )
         self.cv3 = nn.ModuleList(nn.Sequential(GhostConv_Modification(x, c3, 3), GhostConv_Modification(c3, c3, 3), nn.Conv2d(c3, self.nc, 1)) for x in ch)
         self.dfl = DFL(self.reg_max) if self.reg_max > 1 else nn.Identity()
+        self.attn = CBAM(ch[0])
         # self.up = nn.Upsample(scale_factor=2, mode="nearest")
 
     def forward(self, x):
         """Concatenates and returns predicted bounding boxes and class probabilities."""
+        x=self.attn(x)
         for i in range(self.nl):
             cv2_out = self.cv2[i](x[i])
             cv3_out = self.cv3[i](x[i])
