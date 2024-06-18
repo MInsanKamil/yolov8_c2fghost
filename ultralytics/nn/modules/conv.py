@@ -561,39 +561,29 @@ class Conv_Weighted_Pooling(nn.Module):
 class Conv_Max_Pooling_Dropout_Attn(nn.Module):
     """Standard convolution with args(ch_in, ch_out, kernel, stride, padding, groups, dilation, activation)."""
 
-    # default_act = nn.SiLU()  # default activation
+    default_act = nn.SiLU()  # default activation
 
     def __init__(self, c1, c2, k=1, s=1, p=None, g=1, d=1, act=True):
         """Initialize Conv layer with given arguments including activation."""
         super().__init__()
         self.conv = nn.Conv2d(c1, c2, k, s, autopad(k, p, d), groups=g, dilation=d, bias=False)
         self.bn = nn.BatchNorm2d(c2)
-        # self.act = self.default_act if act is True else act if isinstance(act, nn.Module) else nn.Identity()
+        self.act = self.default_act if act is True else act if isinstance(act, nn.Module) else nn.Identity()
         self.max_pool = nn.MaxPool2d(3, stride=2)  # GAP layer
-        self.dropout = nn.Dropout(0.2)
+        # self.dropout = nn.Dropout(0.2)
 
-        # self.sa= SpatialAttention()
-        self.ca= ChannelAttention(c2)
+        # self.sa= SpatialAttention(3)
+        # self.ca= ChannelAttention(c2)
         
 
     def forward(self, x):
         """Apply convolution, batch normalization and activation to input tensor."""
-        # x = self.ca(x)
-        if self.training:   
-            x = self.ca(self.bn(self.conv(self.max_pool(self.dropout(x)))))
-        else:
-            x = self.ca(self.bn(self.conv(self.max_pool(x))))
-        # x = self.sa(x)
+        x = self.act(self.bn(self.conv(self.max_pool(self.act(x)))))
         return x
 
     def forward_fuse(self, x):
-        """Perform transposed convolution of 2D data."""
-        # x = self.ca(x)
-        if self.training:   
-            x = self.ca(self.conv(self.max_pool(self.dropout(x))))
-        else:
-            x = self.ca(self.conv(self.max_pool(x)))
-        # x = self.sa(x)
+        """Perform transposed convolution of 2D data.""" 
+        x = self.act(self.conv(self.max_pool(self.act(x))))
         return x
     
 class Avg_Pooling_Conv(nn.Module):
@@ -939,25 +929,29 @@ class DS_Conv(nn.Module):
 class Conv_Attn(nn.Module):
     """Standard convolution with args(ch_in, ch_out, kernel, stride, padding, groups, dilation, activation)."""
 
-    # default_act = nn.SiLU()  # default activation
+    default_act = nn.SiLU()  # default activation
 
     def __init__(self, c1, c2, k=1, s=1, p=None, g=1, d=1, act=True):
         """Initialize Conv layer with given arguments including activation."""
         super().__init__()
         self.conv = nn.Conv2d(c1, c2, k, s, autopad(k, p, d), groups=g, dilation=d, bias=False)
         self.bn = nn.BatchNorm2d(c2)
-        # self.act = self.default_act if act is True else act if isinstance(act, nn.Module) else nn.Identity()
-        self.ca = ChannelAttention(c2)
-        # self.sa = SpatialAttention()
+        self.act = self.default_act if act is True else act if isinstance(act, nn.Module) else nn.Identity()
+        self.ca = ChannelAttention(c1)
+        self.sa = SpatialAttention()
 
     def forward(self, x):
         """Apply convolution, batch normalization and activation to input tensor."""
-        x = self.ca(self.bn(self.conv(x)))
+        x = self.ca(x)
+        x = self.act(self.bn(self.conv(x)))
+        x = self.sa(x)
         return x
 
     def forward_fuse(self, x):
         """Perform transposed convolution of 2D data."""
-        x = self.ca(self.conv(x))
+        x = self.ca(x)
+        x = self.act(self.conv(x))
+        x = self.sa(x)
         return x
     
 class Conv_Dropout(nn.Module):
