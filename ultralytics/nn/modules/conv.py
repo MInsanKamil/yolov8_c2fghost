@@ -501,7 +501,7 @@ class Conv_Max_Pooling_Dropout(nn.Module):
         self.bn = nn.BatchNorm2d(c2)
         self.act = self.default_act if act is True else act if isinstance(act, nn.Module) else nn.Identity()
         self.max_pool = nn.MaxPool2d(3, stride=2)  # GAP layer
-        self.max_pool2 = nn.MaxPool2d(5, stride=4, padding=1)
+        # self.max_pool2 = nn.MaxPool2d(5, stride=4, padding=1)
         self.dropout = nn.Dropout(0.5)
 
         # self.sa= SpatialAttention()
@@ -515,7 +515,7 @@ class Conv_Max_Pooling_Dropout(nn.Module):
             x = self.act(self.bn(self.conv(self.max_pool(self.dropout(x)))))
             # LOGGER.info("efisien strategy successfully!")
         else:
-            x = self.act(self.bn(self.conv(self.max_pool2(x))))
+            x = self.act(self.bn(self.conv(self.max_pool(self.max_pool(x)))))
         # x = self.sa(x)
         return x
 
@@ -525,7 +525,7 @@ class Conv_Max_Pooling_Dropout(nn.Module):
         if self.training:   
             x = self.act(self.conv(self.max_pool(self.dropout(x))))
         else:
-            x = self.act(self.conv(self.max_pool2(x)))
+            x = self.act(self.conv(self.max_pool(self.max_pool(x))))
         # x = self.sa(x)
         return x
     
