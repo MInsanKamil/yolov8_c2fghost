@@ -683,7 +683,7 @@ class Conv_Avg_Pooling(nn.Module):
             x = self.act(self.bn(self.conv(x)))
             # LOGGER.info("efisien strategy successfully!")
         else:
-            x = self.act(self.bn(self.conv(self.avg_pool(x))))
+            x = self.avg_pool(self.act(self.bn(self.conv(x))))
         # x = self.sa(x)
         return x
 
@@ -693,7 +693,7 @@ class Conv_Avg_Pooling(nn.Module):
         if self.training:   
             x = self.act(self.conv(x))
         else:
-            x = self.act(self.conv(self.avg_pool(x)))
+            x = self.avg_pool(self.act(self.conv(x)))
         # x = self.sa(x)
         return x
     
