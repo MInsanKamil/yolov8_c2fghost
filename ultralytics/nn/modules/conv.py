@@ -674,7 +674,7 @@ class Conv_Avg_Pooling(nn.Module):
         self.conv = nn.Conv2d(c1, c2, k, s, autopad(k, p, d), groups=g, dilation=d, bias=False)
         self.bn = nn.BatchNorm2d(c2)
         self.act = self.default_act if act is True else act if isinstance(act, nn.Module) else nn.Identity()
-        self.avg_pool = nn.AvgPool2d(2, stride=2)  # GAP layer
+        self.avg_pool = nn.AvgPool2d(3, stride=2)  # GAP layer
 
     def forward(self, x):
         """Apply convolution, batch normalization and activation to input tensor."""
@@ -1660,10 +1660,11 @@ class Concat_Feature_Map(nn.Module):
     def forward(self, x):
         """Forward pass for the YOLOv8 mask Proto module."""
         if x[0].shape[2:] != x[1].shape[2:]:
-            x1 = nn.functional.interpolate(x[1],size=x[0].shape[2:], mode="nearest")
+            fractional_pool = nn.FractionalMaxPool2d(3, output_size=x[1].shape[2:])
+            x0 = fractional_pool(x[0])
         else:
-            x1 = x[1]
-        return torch.cat((x[0], x1), self.d)
+            x0 = x[0]
+        return torch.cat((x0, x[1]), self.d)
     
 class Nothing(nn.Module):
     """Concatenate a list of tensors along dimension."""
