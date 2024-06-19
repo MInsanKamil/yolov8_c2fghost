@@ -1668,13 +1668,13 @@ class Concat_Feature_Map(nn.Module):
             
             # Determine if x[1] is larger than x[0] in any spatial dimension
             if any([shape1[i] > shape0[i] for i in range(len(shape0))]):
-                # Crop x[1] to match x[0]
-                x1 = x[1][:,:shape0[0], :shape0[1]]
-                x0 = x[0]
-            else:
                 # Crop x[0] to match x[1]
                 x0 = x[0][:,:shape1[0], :shape1[1]]
                 x1 = x[1]
+            else:
+                # Crop x[1] to match x[0]
+                x1 = x[1][:,:shape0[0], :shape0[1]]
+                x0 = x[0]
         else:
             x0 = x[0]
             x1 = x[1]
