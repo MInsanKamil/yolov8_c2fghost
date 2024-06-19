@@ -501,7 +501,7 @@ class Conv_Max_Pooling_Dropout(nn.Module):
         self.conv = nn.Conv2d(c1, c2, k, s, autopad(k, p, d), groups=g, dilation=d, bias=False)
         self.bn = nn.BatchNorm2d(c2)
         self.act = self.default_act if act is True else act if isinstance(act, nn.Module) else nn.Identity()
-        self.max_pool = nn.MaxPool2d(3, stride=2)  # GAP layer
+        self.max_pool = nn.MaxPool2d(2, stride=2, ceil_mode=True)  # GAP layer
         self.dropout = nn.Dropout(0.5)
 
         # self.sa= SpatialAttention()
@@ -540,7 +540,7 @@ class Conv_Max_Pooling(nn.Module):
         self.conv = nn.Conv2d(c1, c2, k, s, autopad(k, p, d), groups=g, dilation=d, bias=False)
         self.bn = nn.BatchNorm2d(c2)
         self.act = self.default_act if act is True else act if isinstance(act, nn.Module) else nn.Identity()
-        self.max_pool = nn.MaxPool2d(2, stride=2)  # GAP layer
+        self.max_pool = nn.MaxPool2d(2, stride=2,ceil_mode=True)  # GAP layer
 
         # self.sa= SpatialAttention()
         # self.ca= ChannelAttention(c1)
@@ -1668,13 +1668,13 @@ class Concat_Feature_Map(nn.Module):
             
             # Determine if x[1] is larger than x[0] in any spatial dimension
             if any([shape1[i] > shape0[i] for i in range(len(shape0))]):
-                # Crop x[0] to match x[1]
-                x0 = x[0][:,:shape1[0], :shape1[1]]
-                x1 = x[1]
-            else:
                 # Crop x[1] to match x[0]
                 x1 = x[1][:,:shape0[0], :shape0[1]]
                 x0 = x[0]
+            else:
+                # Crop x[0] to match x[1]
+                x0 = x[0][:,:shape1[0], :shape1[1]]
+                x1 = x[1]
         else:
             x0 = x[0]
             x1 = x[1]
