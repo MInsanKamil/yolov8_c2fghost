@@ -1578,7 +1578,7 @@ class CBAM_Module(nn.Module):
 
     def forward(self, x):
         """Applies the forward pass through C1 module."""
-        return self.spatial_attention(self.channel_attention(x))
+        return torch.cat((x,self.spatial_attention(self.channel_attention(x))), 1)
     
 class DoubleAttentionLayer(nn.Module):
     """
