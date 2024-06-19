@@ -692,7 +692,8 @@ class C2f_sa(nn.Module):
         """Forward pass through C2f layer."""
         y = list(self.cv1(x).chunk(2, 1))
         y.extend(m(y[-1]) for m in self.m)
-        return self.attn(self.cv2(torch.cat(y, 1)))
+        z = self.cv2(torch.cat(y, 1))
+        return torch.cat((self.attn(z), z), 1)
         
 
     def forward_split(self, x):
