@@ -615,7 +615,7 @@ class Conv_Max_Pooling_Dropout_Attn(nn.Module):
         self.max_pool = nn.MaxPool2d(3, stride=2)  # GAP layer
         self.dropout = nn.Dropout(0.5)
         self.sa= SpatialAttention()
-        self.ca= ChannelAttention(c1)
+        self.ca= ChannelAttention(c2)
         
 
     def forward(self, x):
