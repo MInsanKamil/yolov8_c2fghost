@@ -978,15 +978,22 @@ class DS_Conv(nn.Module):
         super(DS_Conv, self).__init__()
         self.depthwise = nn.Conv2d(c1, c2, k, s,padding=autopad(k, p, d), groups=math.gcd(c1, c2), dilation=d, bias=False)
         self.pointwise = nn.Conv2d(c2, c2, kernel_size=1, bias=False)
+        self.conv = nn.Conv2d(c1, c2, k, s, autopad(k, p, d), groups=g, dilation=d, bias=False)
         self.bn = nn.BatchNorm2d(c2)
         self.act = self.default_act if act is True else act if isinstance(act, nn.Module) else nn.Identity()
     def forward(self, x):
-        x = self.act(self.bn(self.pointwise(self.depthwise(x))))
+        if self.training:
+            x = self.act(self.bn(self.conv(x)))
+        else:
+            x = self.act(self.bn(self.pointwise(self.depthwise(x))))
         return x
     
     def forward_fuse(self, x):
         """Perform transposed convolution of 2D data."""
-        x = self.act(self.pointwise(self.depthwise(x)))
+        if self.training:
+            x = self.act(self.conv(x))
+        else:
+            x = self.act(self.pointwise(self.depthwise(x)))
         return x
     
 class Conv_Attn(nn.Module):
