@@ -502,7 +502,7 @@ class Conv_Max_Pooling_Dropout(nn.Module):
         self.bn = nn.BatchNorm2d(c2)
         self.act = self.default_act if act is True else act if isinstance(act, nn.Module) else nn.Identity()
         self.max_pool = nn.MaxPool2d(3, stride=2)  # GAP layer
-        self.dropout = nn.Dropout(0.5)
+        self.dropout = nn.Dropout(0.2)
 
         # self.sa= SpatialAttention()
         # self.ca= ChannelAttention(c1)
@@ -1538,16 +1538,16 @@ class ChannelAttention(nn.Module):
 class ChannelAttention_Pool(nn.Module):
     """Channel-attention module https://github.com/open-mmlab/mmdetection/tree/v3.0.0rc1/configs/rtmdet."""
 
-    def __init__(self, c1 ) -> None:
+    def __init__(self, channels: int) -> None:
         """Initializes the class and sets the basic configurations and instance variables required."""
         super().__init__()
         self.pool = nn.AdaptiveAvgPool2d(1)
-        self.fc = nn.Conv2d(c1, c1, 1, 1, 0, bias=True)
+        self.fc = nn.Conv2d(channels, channels, 1, 1, 0, bias=True)
         self.act = nn.Sigmoid()
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         """Applies forward pass using activation on convolutions of the input, optionally using batch normalization."""
-        return x *self.act(self.fc(self.pool(x)))
+        return x * self.act(self.fc(self.pool(x)))
 
 
 class SpatialAttention(nn.Module):
