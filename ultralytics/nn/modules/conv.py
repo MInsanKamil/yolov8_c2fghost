@@ -614,24 +614,24 @@ class Conv_Max_Pooling_Dropout_Attn(nn.Module):
         self.act = self.default_act if act is True else act if isinstance(act, nn.Module) else nn.Identity()
         self.max_pool = nn.MaxPool2d(3, stride=2)  # GAP layer
         self.dropout = nn.Dropout(0.5)
-        # self.sa= SpatialAttention()
-        self.ca= ChannelAttention(c2)
+        self.sa= SpatialAttention()
+        # self.ca= ChannelAttention(c2)
         
 
     def forward(self, x):
         """Apply convolution, batch normalization and activation to input tensor."""
         if self.training:   
-            x = self.act(self.bn(self.ca(self.conv(self.max_pool(self.dropout(x))))))
+            x = self.act(self.bn(self.conv(self.max_pool(self.sa(self.dropout(x))))))
         else:
-            x = self.act(self.bn(self.ca(self.conv(self.max_pool(x)))))
+            x = self.act(self.bn(self.conv(self.max_pool(self.sa(x)))))
         return x
 
     def forward_fuse(self, x):
         """Perform transposed convolution of 2D data."""
         if self.training:   
-            x = self.act(self.ca(self.conv(self.max_pool(self.dropout(x)))))
+            x = self.act(self.conv(self.max_pool(self.sa(self.dropout(x)))))
         else:
-            x = self.act(self.ca(self.conv(self.max_pool(x))))
+            x = self.act(self.conv(self.max_pool(self.sa(x))))
         return x
     
 class Avg_Pooling_Conv(nn.Module):
