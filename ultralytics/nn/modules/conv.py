@@ -393,11 +393,13 @@ class GhostConv_Modification_Attn(nn.Module):
         self.cv1 = Conv(c1, c_, k1, s, None, math.gcd(c1,c_), act=act)
         self.cv2 = Conv(c_, c_, k, 1, None, g, act=act)
         self.ca = ChannelAttention(c_)
+        self.sa = SpatialAttention()
 
     def forward(self, x):
         """Forward propagation through a Ghost Bottleneck layer with skip connection."""
         y = self.cv1(x)
         y = self.ca(y)
+        y = self.sa(y)
         return torch.cat((y, self.cv2(y)), 1)
     
 class GhostConv_Attn_Avg_Pool(nn.Module):
