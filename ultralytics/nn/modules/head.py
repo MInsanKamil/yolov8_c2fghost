@@ -9,7 +9,7 @@ from torch.nn.init import constant_, xavier_uniform_
 import torch.nn.functional as F
 from ultralytics.utils.tal import TORCH_1_10, dist2bbox, dist2rbox, make_anchors
 from .block import DFL, Proto, ContrastiveHead, BNContrastiveHead
-from .conv import Conv, Conv_Attn, GhostConv, Conv_Avg_Pooling_Attn, DS_Conv, GhostConv_Modification, CBAM
+from .conv import Conv, Conv_Attn, GhostConv, Conv_Avg_Pooling_Attn, DS_Conv, GhostConv_Modification, CBAM, GhostConv_Modification_Attn
 from .transformer import MLP, DeformableTransformerDecoder, DeformableTransformerDecoderLayer
 from .utils import bias_init_with_prob, linear_init
 
@@ -35,9 +35,9 @@ class Detect(nn.Module):
         self.stride = torch.zeros(self.nl)  # strides computed during build
         c2, c3 = max((16, ch[0] // 4, self.reg_max * 4)), max(ch[0], min(self.nc, 100))  # channels
         self.cv2 = nn.ModuleList(
-            nn.Sequential(GhostConv_Modification(x, c2, 3), GhostConv_Modification(c2, c2, 3),nn.Conv2d(c2, 4 * self.reg_max, 1)) for x in ch
+            nn.Sequential(GhostConv_Modification_Attn(x, c2, 3), GhostConv_Modification_Attn(c2, c2, 3),nn.Conv2d(c2, 4 * self.reg_max, 1)) for x in ch
         )
-        self.cv3 = nn.ModuleList(nn.Sequential(GhostConv_Modification(x, c3, 3), GhostConv_Modification(c3, c3, 3), nn.Conv2d(c3, self.nc, 1)) for x in ch)
+        self.cv3 = nn.ModuleList(nn.Sequential(GhostConv_Modification_Attn(x, c3, 3), GhostConv_Modification_Attn(c3, c3, 3), nn.Conv2d(c3, self.nc, 1)) for x in ch)
         self.dfl = DFL(self.reg_max) if self.reg_max > 1 else nn.Identity()
         # self.up = nn.Upsample(scale_factor=2, mode="nearest")
 
