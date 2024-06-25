@@ -5,6 +5,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import torchvision
+import math
 
 from .conv import Conv,Conv_DownSampleAttn,Conv_Attn,DS_Conv,GhostConv_Modification, Conv_Down_Up,DWConv, GhostConv, LightConv, RepConv, autopad, Conv_SP, Conv_Prune, CBAM, ChannelAttention
 from .transformer import TransformerBlock
@@ -638,9 +639,9 @@ class C2f_DS_Conv(nn.Module):
         """
         super().__init__()
         self.c = int(c2 * e)  # hidden channels
-        self.cv1 = DS_Conv(c1, 2 * self.c, 1, 1)
-        self.cv2 = DS_Conv((2 + n) * self.c, c2, 1)  # optional act=FReLU(c2)
-        self.m = nn.ModuleList(Bottleneck_DSConv(self.c, self.c, shortcut, g, k=((3, 3), (3, 3)), e=1.0) for _ in range(n))
+        self.cv1 = Conv(c1, 2 * self.c, 1, 1, g=math.gcd(c1, 2 * self.c))
+        self.cv2 = Conv((2 + n) * self.c, c2, 1)  # optional act=FReLU(c2)
+        self.m = nn.ModuleList(Bottleneck(self.c, self.c, shortcut, g, k=((3, 3), (3, 3)), e=1.0) for _ in range(n))
 
     def forward(self, x):
         """Forward pass through C2f layer."""
