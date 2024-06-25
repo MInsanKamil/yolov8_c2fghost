@@ -215,7 +215,7 @@ class SPPF_DownAttn(nn.Module):
         self.cv1 = Conv(c1, c_, 1, 1)
         self.cv2 = Conv(c_ * 4, c2, 1, 1)
         self.m = nn.MaxPool2d(kernel_size=k, stride=1, padding=k // 2)
-        self.cbam = CBAM(c1)
+        self.cbam = CBAM(c_)
 
     def forward(self, x):
         """Forward pass through Ghost Convolution block."""
