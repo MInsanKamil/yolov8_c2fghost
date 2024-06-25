@@ -782,19 +782,19 @@ class Conv_Avg_Pooling_Attn(nn.Module):
         self.conv = nn.Conv2d(c1, c2, k, s, autopad(k, p, d), groups=g, dilation=d, bias=False)
         self.bn = nn.BatchNorm2d(c2)
         self.act = self.default_act if act is True else act if isinstance(act, nn.Module) else nn.Identity()
-        self.avg_pool = nn.AvgPool2d(2, stride=2)  # GAP layer
-        # self.ca = ChannelAttention(c1)
+        self.avg_pool = nn.AvgPool2d(3, stride=2)  # GAP layer
+        self.ca = ChannelAttention(c1)
         self.sa = SpatialAttention()
 
     def forward(self, x):
         """Apply convolution, batch normalization and activation to input tensor."""
-        # x = self.ca(x)
+        x = self.ca(x)
         x = self.act(self.bn(self.conv(self.avg_pool(self.sa(x)))))
         return x
 
     def forward_fuse(self, x):
         """Perform transposed convolution of 2D data."""
-        # x = self.ca(x)
+        x = self.ca(x)
         x = self.act(self.conv(self.avg_pool(self.sa(x))))
         return x
 
