@@ -7,6 +7,7 @@ import torch
 import torch.nn as nn
 from torch.nn.init import constant_, xavier_uniform_
 import torch.nn.functional as F
+from ultralytics.utils import LOGGER
 from ultralytics.utils.tal import TORCH_1_10, dist2bbox, dist2rbox, make_anchors
 from .block import DFL, Proto, ContrastiveHead, BNContrastiveHead
 from .conv import Conv, Conv_Attn, GhostConv, Conv_Avg_Pooling_Attn, DS_Conv, GhostConv_Modification, CBAM, GhostConv_Modification_Attn
@@ -34,6 +35,7 @@ class Detect(nn.Module):
         self.no = nc + self.reg_max * 4  # number of outputs per anchor
         self.stride = torch.zeros(self.nl)  # strides computed during build
         c2, c3 = max((16, ch[0] // 4, self.reg_max * 4)), max(ch[0], min(self.nc, 100))  # channels
+        LOGGER.info(f"ch[0] {ch[0]}")
         self.cv2 = nn.ModuleList(
             nn.Sequential(GhostConv_Modification(x, c2, 3), GhostConv_Modification(c2, c2, 3),nn.Conv2d(c2, 4 * self.reg_max, 1)) for x in ch
         )
