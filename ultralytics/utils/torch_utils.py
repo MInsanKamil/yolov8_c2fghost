@@ -270,7 +270,7 @@ def model_info(model, detailed=False, verbose=True, imgsz=640):
                 % (i, name, p.requires_grad, p.numel(), list(p.shape), p.mean(), p.std(), p.dtype)
             )
 
-    flops = get_flops_with_torch_profiler(model, imgsz)
+    flops = get_flops(model, imgsz)
     fused = " (fused)" if getattr(model, "is_fused", lambda: False)() else ""
     fs = f", {flops:.1f} GFLOPs" if flops else ""
     yaml_file = getattr(model, "yaml_file", "") or getattr(model, "yaml", {}).get("yaml_file", "")
