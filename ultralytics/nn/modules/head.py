@@ -36,27 +36,18 @@ class Detect(nn.Module):
         self.stride = torch.zeros(self.nl)  # strides computed during build
         c2, c3 = max((16, ch[0] // 4, self.reg_max * 4)), max(ch[0], min(self.nc, 100))  # channels
         # LOGGER.info(f"ch[0] {ch[0]}")
-        self.cvmodify = nn.ModuleList(
-            nn.Sequential(GhostConv(x, c2, 3), GhostConv(c2, c2, 3)) for x in ch
+        self.cv2 = nn.ModuleList(
+            nn.Sequential(GhostConv(x, c2, 3), GhostConv(c2, c2, 3),nn.Conv2d(c2, 4 * self.reg_max, 1)) for x in ch
         )
-        self.cv2 = nn.Conv2d(c2, 4 * self.reg_max, 1)
-        self.cv3 = nn.Conv2d(c3, self.nc, 1)
-        # self.cv2 = nn.ModuleList(
-        #     nn.Sequential(GhostConv(x, c2, 3), GhostConv(c2, c2, 3),nn.Conv2d(c2, 4 * self.reg_max, 1)) for x in ch
-        # )
-        # self.cv3 = nn.ModuleList(nn.Sequential(GhostConv(x, c3, 3), GhostConv(c3, c3, 3), nn.Conv2d(c3, self.nc, 1)) for x in ch)
+        self.cv3 = nn.ModuleList(nn.Sequential(GhostConv(x, c3, 3), GhostConv(c3, c3, 3), nn.Conv2d(c3, self.nc, 1)) for x in ch)
         self.dfl = DFL(self.reg_max) if self.reg_max > 1 else nn.Identity()
         # self.up = nn.Upsample(scale_factor=2, mode="nearest")
 
     def forward(self, x):
         """Concatenates and returns predicted bounding boxes and class probabilities."""
         for i in range(self.nl):
-            # cv2_out = self.cv2[i](x[i])
-            # cv3_out = self.cv3[i](x[i])
-            # x[i] = torch.cat((cv2_out, cv3_out), 1)
-            cvmodify = self.cvmodify[i](x[i])
-            cv2_out = self.cv2(cvmodify)
-            cv3_out = self.cv3(cvmodify)
+            cv2_out = self.cv2[i](x[i])
+            cv3_out = self.cv3[i](x[i])
             x[i] = torch.cat((cv2_out, cv3_out), 1)
         if self.training:  # Training path
             return x
