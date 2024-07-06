@@ -436,17 +436,14 @@ class GhostConv_Attn(nn.Module):
         super().__init__()
         c_ = c2 // 2  # hidden channels
         self.cv1 = Conv(c1, c_, k, s, None, g, act=act)
-        self.cv2 = Conv(c_, c_, 1, 1, None, c_, act=act)
-        self.ca2 = ChannelAttention(c_)
-        self.ca = ChannelAttention(c1)
+        self.cv2 = Conv(c_, c_, 7, 1, None, c_, act=act)
+        self.ca = ChannelAttention(c_)
         self.sa = SpatialAttention()
 
     def forward(self, x):
         """Forward propagation through a Ghost Bottleneck layer with skip connection."""
-        x = self.ca(x)
         y = self.cv1(x)
-        z = torch.cat((y, self.ca2(self.cv2(y))), 1)
-        return self.sa(z)
+        return torch.cat((y, self.sa(self.ca(self.cv2(y)))), 1)
     
 class GhostConv_Without_BN_Act(nn.Module):
     """Ghost Convolution https://github.com/huawei-noah/ghostnet."""
