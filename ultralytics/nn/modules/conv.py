@@ -562,31 +562,16 @@ class Conv_Max_Pooling(nn.Module):
         self.conv = nn.Conv2d(c1, c2, k, s, autopad(k, p, d), groups=g, dilation=d, bias=False)
         self.bn = nn.BatchNorm2d(c2)
         self.act = self.default_act if act is True else act if isinstance(act, nn.Module) else nn.Identity()
-        self.max_pool = nn.MaxPool2d(2, stride=2,ceil_mode=True)  # GAP layer
-
-        # self.sa= SpatialAttention()
-        # self.ca= ChannelAttention(c1)
+        self.max_pool = nn.MaxPool2d(3, stride=2)  # GAP layer
         
-
     def forward(self, x):
         """Apply convolution, batch normalization and activation to input tensor."""
-        # x = self.ca(x)
-        if self.training:   
-            x = self.act(self.bn(self.conv(x)))
-            # LOGGER.info("efisien strategy successfully!")
-        else:
-            x = self.act(self.bn(self.conv(self.max_pool(x))))
-        # x = self.sa(x)
+        x = self.act(self.bn(self.conv(self.max_pool(x))))
         return x
 
     def forward_fuse(self, x):
         """Perform transposed convolution of 2D data."""
-        # x = self.ca(x)
-        if self.training:   
-            x = self.act(self.conv(x))
-        else:
-            x = self.act(self.conv(self.max_pool(x)))
-        # x = self.sa(x)
+        x = self.act(self.conv(self.max_pool(x)))
         return x
     
 class Conv_Weighted_Pooling(nn.Module):
