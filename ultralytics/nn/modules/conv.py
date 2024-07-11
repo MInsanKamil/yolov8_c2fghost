@@ -380,15 +380,11 @@ class MaxAvg_Pooling_Conv(nn.Module):
 
     def forward(self, x):
         """Apply convolution, batch normalization and activation to input tensor."""
-        x = torch.cat((self.avg_pool(x), self.max_pool(x)), 1)
-        x = self.act(self.bn(self.conv(x)))
-        return x
+        return self.act(self.bn(self.conv(torch.cat((self.avg_pool(x), self.max_pool(x)), 1))))
 
     def forward_fuse(self, x):
         """Perform transposed convolution of 2D data."""
-        x = torch.cat((self.avg_pool(x), self.max_pool(x)), 1)
-        x = self.act(self.conv(x))
-        return x
+        return self.act(self.conv(torch.cat((self.avg_pool(x), self.max_pool(x)), 1)))
 
 
 class GhostConv_Modification(nn.Module):
