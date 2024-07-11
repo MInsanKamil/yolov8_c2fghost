@@ -64,7 +64,8 @@ __all__ = (
     "sliceSamp_Conv",
     "Conv_Weighted_Pooling",
     "Conv_Max_Pooling",
-    "GhostConv_Modification_Attn"
+    "GhostConv_Modification_Attn",
+    "MaxAvg_Pooling_Conv"
 )
 
 def conv_bn(inp, oup, stride):
@@ -362,6 +363,32 @@ class GhostConv(nn.Module):
         """Forward propagation through a Ghost Bottleneck layer with skip connection."""
         y = self.cv1(x)
         return torch.cat((y, self.cv2(y)), 1)
+
+class MaxAvg_Pooling_Conv(nn.Module):
+    """Standard convolution with args(ch_in, ch_out, kernel, stride, padding, groups, dilation, activation)."""
+
+    default_act = nn.SiLU()  # default activation
+
+    def __init__(self, c1, c2, k=1, s=1, p=None, g=1, d=1, act=True):
+        """Initialize Conv layer with given arguments including activation."""
+        super().__init__()
+        self.conv = nn.Conv2d(c1*2, c2, k, s, autopad(k, p, d), groups=g, dilation=d, bias=False)
+        self.bn = nn.BatchNorm2d(c2)
+        self.act = self.default_act if act is True else act if isinstance(act, nn.Module) else nn.Identity()
+        self.avg_pool = nn.AvgPool2d(3, stride=2)
+        self.max_pool = nn.MaxPool2d(3, stride=2)  # GAP layer
+
+    def forward(self, x):
+        """Apply convolution, batch normalization and activation to input tensor."""
+        x = torch.cat((self.avg_pool(x), self.max_pool(x)), 1)
+        x = self.act(self.bn(self.conv(x)))
+        return x
+
+    def forward_fuse(self, x):
+        """Perform transposed convolution of 2D data."""
+        x = torch.cat((self.avg_pool(x), self.max_pool(x)), 1)
+        x = self.act(self.conv(x))
+        return x
 
 
 class GhostConv_Modification(nn.Module):
