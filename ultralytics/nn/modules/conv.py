@@ -383,7 +383,7 @@ class MaxAvg_Pooling_Conv(nn.Module):
         LOGGER.info(f"shape input{x.size()}")
         LOGGER.info(f"shape after avg pooling{self.avg_pool(x).size()}")
         LOGGER.info(f"shape after max pooling{self.max_pool(x).size()}")
-        LOGGER.info(f"shape after concat {torch.cat((self.avg_pool(x), self.max_pool(x)), 1)}")
+        LOGGER.info(f"shape after concat {torch.cat((self.avg_pool(x), self.max_pool(x)), 1).size()}")
         return self.act(self.bn(self.conv(torch.cat((self.avg_pool(x), self.max_pool(x)), 1))))
 
     def forward_fuse(self, x):
