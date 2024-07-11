@@ -1,7 +1,6 @@
 # Ultralytics YOLO 🚀, AGPL-3.0 license
 """Convolution modules."""
 
-from copy import deepcopy
 import math
 
 import numpy as np
@@ -373,7 +372,7 @@ class MaxAvg_Pooling_Conv(nn.Module):
     def __init__(self, c1, c2, k=1, s=1, p=None, g=1, d=1, act=True):
         """Initialize Conv layer with given arguments including activation."""
         super().__init__()
-        self.conv = nn.Conv2d(6, c2, k, s, autopad(k, p, d), groups=g, dilation=d, bias=False)
+        self.conv = nn.Conv2d(c1*2, c2, k, s, autopad(k, p, d), groups=g, dilation=d, bias=False)
         self.bn = nn.BatchNorm2d(c2)
         self.act = self.default_act if act is True else act if isinstance(act, nn.Module) else nn.Identity()
         self.avg_pool = nn.AvgPool2d(3, stride=2)
@@ -381,16 +380,19 @@ class MaxAvg_Pooling_Conv(nn.Module):
 
     def forward(self, x):
         """Apply convolution, batch normalization and activation to input tensor."""
-        z = deepcopy(x)
-        LOGGER.info(f"shape input{z.size()}")
-        LOGGER.info(f"shape after avg pooling{self.avg_pool(z).size()}")
-        LOGGER.info(f"shape after max pooling{self.max_pool(z).size()}")
-        LOGGER.info(f"shape after concat {torch.cat((self.avg_pool(z), self.max_pool(z)), 1).size()}")
-        return self.act(self.bn(self.conv(torch.cat((self.avg_pool(z), self.max_pool(z)), 1))))
+        a = self.avg_pool(x)
+        m = self.max_pool(x)
+        c = torch.cat((a, m), 1)
+        x = self.act(self.bn(self.conv(c)))
+        return x
 
     def forward_fuse(self, x):
         """Perform transposed convolution of 2D data."""
-        return self.act(self.conv(torch.cat((self.avg_pool(x), self.max_pool(x)), 1)))
+        a = self.avg_pool(x)
+        m = self.max_pool(x)
+        c = torch.cat((a, m), 1)
+        x = self.act(self.conv(c))
+        return x
 
 
 class GhostConv_Modification(nn.Module):
@@ -695,6 +697,34 @@ class Avg_Pooling_Conv(nn.Module):
     def forward_fuse(self, x):
         """Perform transposed convolution of 2D data."""
         x = self.avg_pool(x)
+        x = self.act(self.conv(x))
+        return x
+    
+class Avg_Attn_Pooling_Conv(nn.Module):
+    """Standard convolution with args(ch_in, ch_out, kernel, stride, padding, groups, dilation, activation)."""
+
+    default_act = nn.SiLU()  # default activation
+
+    def __init__(self, c1, c2, k=1, s=1, p=None, g=1, d=1, act=True):
+        """Initialize Conv layer with given arguments including activation."""
+        super().__init__()
+        self.conv = nn.Conv2d(c1, c2, k, s, autopad(k, p, d), groups=g, dilation=d, bias=False)
+        self.bn = nn.BatchNorm2d(c2)
+        self.act = self.default_act if act is True else act if isinstance(act, nn.Module) else nn.Identity()
+        self.avg_pool = nn.AvgPool2d(3, stride=2)  # GAP layer
+        self.attn = CBAM(c1)
+
+    def forward(self, x):
+        """Apply convolution, batch normalization and activation to input tensor."""
+        x = self.avg_pool(x)
+        x = self.attn(x)
+        x = self.act(self.bn(self.conv(x)))
+        return x
+
+    def forward_fuse(self, x):
+        """Perform transposed convolution of 2D data."""
+        x = self.avg_pool(x)
+        x = self.attn(x)
         x = self.act(self.conv(x))
         return x
     
