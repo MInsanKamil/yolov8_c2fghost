@@ -862,7 +862,6 @@ def parse_model(d, ch, verbose=True):  # model_dict, input_channels(3)
             Conv_Max_Pooling_Dropout_Attn,
             Conv_Weighted_Pooling,
             GhostConv_Modification_Attn,
-            MaxAvg_Pooling_Conv,
             Conv_Max_Pooling,
             sliceSamp_Conv,
             Conv_DownSampleAttn,
@@ -951,6 +950,10 @@ def parse_model(d, ch, verbose=True):  # model_dict, input_channels(3)
             if m in (BottleneckCSP, C1, C2, C2f, C2fAttn, C3, C3TR, C3Ghost,C2fADown,C2f_Conv_Prune,C2f_Ca,C2f_Equalize,C2f_Ghost_Conv,C2f_DS_Conv_Attn,C2f_DS_Conv,C2f_Conv_Attn,C2f_sa,C2fGhost,C2fAttnGhost,C2f_Double_Stride,C2f_Stride,C2f_MaxPool,C2f_Double_MaxPool,C2f_Upsample,C2f_Stride_Maxpool,C2f_Fractional_MaxPool,C3f_Double_Stride, C3x, RepC3):
                 args.insert(2, n)  # number of repeats
                 n = 1
+        elif m is MaxAvg_Pooling_Conv:
+            c1, c2 = args[0], args[1]
+            if c2 != nc:  # if c2 not equal to number of classes (i.e. for Classify() output)
+                c2 = make_divisible(min(c2, max_channels) * width, 8)
         elif m is CBAM_Module:
             args = [ch[f], *args]
         elif m is ChannelAttention_Pool:
