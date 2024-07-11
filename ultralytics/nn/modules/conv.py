@@ -743,7 +743,7 @@ class Avg_Pooling_Conv_Attn(nn.Module):
         self.bn = nn.BatchNorm2d(c2)
         self.act = self.default_act if act is True else act if isinstance(act, nn.Module) else nn.Identity()
         self.avg_pool = nn.AvgPool2d(3, stride=2)  # GAP layer
-        self.attn = CBAM(c2)
+        self.attn = CBAM(c2,3)
 
     def forward(self, x):
         """Apply convolution, batch normalization and activation to input tensor."""
