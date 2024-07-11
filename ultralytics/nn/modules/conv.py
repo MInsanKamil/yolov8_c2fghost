@@ -381,7 +381,7 @@ class MaxAvg_Pooling_Conv(nn.Module):
 
     def forward(self, x):
         """Apply convolution, batch normalization and activation to input tensor."""
-        z = x
+        z = x.copy()
         LOGGER.info(f"shape input{x.size()}")
         LOGGER.info(f"shape after avg pooling{self.avg_pool(x).size()}")
         LOGGER.info(f"shape after max pooling{self.max_pool(x).size()}")
