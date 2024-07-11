@@ -771,26 +771,20 @@ class Conv_Avg_Pooling(nn.Module):
         self.bn = nn.BatchNorm2d(c2)
         self.act = self.default_act if act is True else act if isinstance(act, nn.Module) else nn.Identity()
         self.avg_pool = nn.AvgPool2d(3, stride=2)  # GAP layer
+        # self.attn = CBAM(c2)
 
     def forward(self, x):
         """Apply convolution, batch normalization and activation to input tensor."""
-        # x = self.ca(x)
-        if self.training:   
-            x = self.act(self.bn(self.conv(x)))
-            # LOGGER.info("efisien strategy successfully!")
-        else:
-            x = self.act(self.bn(self.conv(self.avg_pool(x))))
-        # x = self.sa(x)
+        x = self.act(self.bn(self.conv(x)))
+        x = self.avg_pool(x)
+        # x = self.attn(x)
         return x
 
     def forward_fuse(self, x):
         """Perform transposed convolution of 2D data."""
-        # x = self.ca(x)
-        if self.training:   
-            x = self.act(self.conv(x))
-        else:
-            x = self.act(self.conv(self.avg_pool(x)))
-        # x = self.sa(x)
+        x = self.act(self.conv(x))
+        x = self.avg_pool(x)
+        # x = self.attn(x)
         return x
     
 
