@@ -65,7 +65,8 @@ __all__ = (
     "Conv_Weighted_Pooling",
     "Conv_Max_Pooling",
     "GhostConv_Modification_Attn",
-    "MaxAvg_Pooling_Conv"
+    "MaxAvg_Pooling_Conv",
+    "Avg_Attn_Pooling_Conv"
 )
 
 def conv_bn(inp, oup, stride):
