@@ -642,6 +642,7 @@ class Conv_Max_Pooling_Dropout_Attn(nn.Module):
         self.max_pool = nn.MaxPool2d(3, stride=2)  # GAP layer
         self.dropout = nn.Dropout(0.5)
         self.sa= SpatialAttention()
+        self.ca= ChannelAttention(c2)
         
 
     def forward(self, x):
@@ -652,6 +653,7 @@ class Conv_Max_Pooling_Dropout_Attn(nn.Module):
             # LOGGER.info("efisien strategy successfully!")
         else:
             x = self.act(self.bn(self.conv(self.max_pool(x))))
+        x = self.ca(x)
         return x
 
     def forward_fuse(self, x):
@@ -661,6 +663,7 @@ class Conv_Max_Pooling_Dropout_Attn(nn.Module):
             x = self.act(self.conv(self.max_pool(self.dropout(x))))
         else:
             x = self.act(self.conv(self.max_pool(x)))
+        x = self.ca(x)
         return x
     
 class Avg_Pooling_Conv(nn.Module):
