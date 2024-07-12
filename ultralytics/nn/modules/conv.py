@@ -67,7 +67,8 @@ __all__ = (
     "GhostConv_Modification_Attn",
     "MaxAvg_Pooling_Conv",
     "Avg_Attn_Pooling_Conv",
-    "Avg_Pooling_Conv_Attn"
+    "Avg_Pooling_Conv_Attn",
+    "Conv_Max_Pooling_Dropout_Attn_CBAM"
 )
 
 def conv_bn(inp, oup, stride):
@@ -666,6 +667,44 @@ class Conv_Max_Pooling_Dropout_Attn(nn.Module):
             x = self.act(self.conv(self.max_pool(x)))
         x = self.ca(x)
         x = self.sa(x)
+        return x
+    
+class Conv_Max_Pooling_Dropout_Attn_CBAM(nn.Module):
+    """Standard convolution with args(ch_in, ch_out, kernel, stride, padding, groups, dilation, activation)."""
+
+    default_act = nn.SiLU()  # default activation
+
+    def __init__(self, c1, c2, k=1, s=1, p=None, g=1, d=1, act=True):
+        """Initialize Conv layer with given arguments including activation."""
+        super().__init__()
+        self.conv = nn.Conv2d(c1, c2, k, s, autopad(k, p, d), groups=g, dilation=d, bias=False)
+        self.bn = nn.BatchNorm2d(c2)
+        self.act = self.default_act if act is True else act if isinstance(act, nn.Module) else nn.Identity()
+        self.max_pool = nn.MaxPool2d(3, stride=2)  # GAP layer
+        self.dropout = nn.Dropout(0.2)
+        self.sa= SpatialAttention()
+        self.cbam = CBAM(c2)
+        
+
+    def forward(self, x):
+        """Apply convolution, batch normalization and activation to input tensor."""
+        x = self.sa(x)
+        if self.training:   
+            x = self.act(self.bn(self.conv(self.max_pool(self.dropout(x)))))
+            # LOGGER.info("efisien strategy successfully!")
+        else:
+            x = self.act(self.bn(self.conv(self.max_pool(x))))
+        x = self.cbam(x)
+        return x
+
+    def forward_fuse(self, x):
+        """Perform transposed convolution of 2D data."""
+        x = self.sa(x)
+        if self.training:   
+            x = self.act(self.conv(self.max_pool(self.dropout(x))))
+        else:
+            x = self.act(self.conv(self.max_pool(x)))
+        x = self.cbam(x)
         return x
     
 class Avg_Pooling_Conv(nn.Module):
