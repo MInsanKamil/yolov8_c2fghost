@@ -655,7 +655,6 @@ class Conv_Max_Pooling_Dropout_Attn(nn.Module):
         else:
             x = self.act(self.bn(self.conv(self.max_pool(x))))
         x = self.ca(x)
-        x = self.sa(x)
         return x
 
     def forward_fuse(self, x):
@@ -666,7 +665,6 @@ class Conv_Max_Pooling_Dropout_Attn(nn.Module):
         else:
             x = self.act(self.conv(self.max_pool(x)))
         x = self.ca(x)
-        x = self.sa(x)
         return x
     
 class Conv_Max_Pooling_Dropout_Attn_CBAM(nn.Module):
