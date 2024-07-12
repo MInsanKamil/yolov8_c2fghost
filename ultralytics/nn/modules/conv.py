@@ -606,27 +606,21 @@ class Conv_Weighted_Pooling(nn.Module):
         self.conv = nn.Conv2d(c1, c2, k, s, autopad(k, p, d), groups=g, dilation=d, bias=False)
         self.bn = nn.BatchNorm2d(c2)
         self.act = self.default_act if act is True else act if isinstance(act, nn.Module) else nn.Identity()
-        self.drop = nn.Dropout(0.5)
+        self.drop = nn.Dropout(0.2)
         self.sum_pool = nn.AvgPool2d(2, stride=2, divisor_override=1) # GAP layer
         
     def forward(self, x):
         """Apply convolution, batch normalization and activation to input tensor."""
-        # x = self.ca(x)
         if self.training:   
-            x = self.act(self.bn(self.conv(self.sum_pool(self.drop(x)))))
-        else:
-            x = self.act(self.bn(self.conv(self.sum_pool(x))))
-        # x = self.sa(x)
+            x = self.drop(x)
+        x = self.act(self.bn(self.conv(self.sum_pool(x))))
         return x
 
     def forward_fuse(self, x):
         """Perform transposed convolution of 2D data."""
-        # x = self.ca(x)
         if self.training:   
-            x = self.act(self.conv(self.sum_pool(self.drop(x))))
-        else:
-            x = self.act(self.conv(self.sum_pool(x)))
-        # x = self.sa(x)
+            x = self.drop(x)
+        x = self.act(self.conv(self.sum_pool(x)))
         return x
 
 class Conv_Max_Pooling_Dropout_Attn(nn.Module):
